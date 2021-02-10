@@ -1,0 +1,57 @@
+name: Prepare 'sign-pad' release
+
+on:
+  push:
+    tags:
+      - release
+
+jobs:
+  prepare-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.SP_CI_AT }}
+
+      - name: Delete temporary trigger tag
+        run: git push origin --delete release
+
+      - name: Setup NodeJS 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install NPM
+        run: npm install
+
+      - name: Bump release version
+        run: |
+          npm run bump -- --release
+          echo "RELEASE_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
+
+      # Build & Verify new version
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      # Push updated content to remote and Tag version
+      - name: Push changes
+        run: |
+          git fetch
+          git config user.email "gullerya@gmail.com"
+          git config user.name "sign-pad CI"
+          git add --all
+          git commit -m "set version to ${{ env.RELEASE_VERSION }}"
+          git push origin HEAD:master
+
+      - name: Tag release
+        run: |
+          git tag -a v${{ env.RELEASE_VERSION }} -m "tag release v${{ env.RELEASE_VERSION }}"
+          git push origin HEAD:master v${{ env.RELEASE_VERSION }}

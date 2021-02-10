@@ -1,0 +1,18 @@
+{
+	"tests": {
+		"url": "/tests/test.html",
+		"maxSkip": 1
+	},
+	"coverage": {
+		"include": [
+			"^\/src\/.+"
+		],
+		"exclude": [
+			"^\/src\/node\/.+",
+			".+\\.min\\.js$"
+		]
+	},
+	"reports": {
+		"folder": "./reports"
+	}
+}
