@@ -11,5 +11,8 @@
 	},
 	"rules": {
 		"no-shadow": 2
+	},
+	"globals": {
+		"globalThis": false
 	}
 }

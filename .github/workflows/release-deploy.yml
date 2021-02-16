@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.OO_CI_AT }}
+          token: ${{ secrets.SP_CI_AT }}
 
       - name: Delete temporary trigger tag
         run: git push origin --delete deploy
