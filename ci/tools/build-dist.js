@@ -4,8 +4,8 @@ import path from 'path';
 import uglifyES from 'uglify-es';
 
 const
-	filesToCopy = ['object-observer.js'],
-	filesToMinify = ['object-observer.js'];
+	filesToCopy = ['sign-pad.js'],
+	filesToMinify = ['sign-pad.js'];
 
 process.stdout.write(`\x1B[32mStarting the build...\x1B[0m${os.EOL}${os.EOL}`);
 

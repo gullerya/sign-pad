@@ -52,9 +52,9 @@
 	},
 	"devDependencies": {
 		"eslint": "^7.20.0",
-		"fs-extra": "^9.0.1",
+		"fs-extra": "^9.1.0",
 		"just-test": "2.3.2",
-		"puppeteer": "^7.0.4",
+		"puppeteer": "^7.1.0",
 		"uglify-es": "^3.3.9"
 	}
 }
