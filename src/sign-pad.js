@@ -1,71 +1,116 @@
 import { ComponentBase, initComponent } from '/node_modules/rich-component/dist/rich-component.min.js';
 
+export {
+	EXPORT_FORMATS
+}
+
+const
+	DRAWING = Symbol('drawing'),
+	GROUPS = Symbol('groups'),
+	CURRENT_GROUP = Symbol('current-group'),
+	LAST_POINT = Symbol('last-point'),
+	EXPORT_FORMATS = { SVG: 'svg', PNG: 'png', JPG: 'jpg' };
+
+class Group {
+	constructor() {
+		this.points = [];
+		this.rects = [];
+	}
+}
+
 class SignPad extends ComponentBase {
 	constructor() {
 		super();
-		this._isDrawing = false;
-		this._pointSets = [];
-		this._points = [];
-		this._paths = [];
-		this.currentPointSet = -1;
-		this.currentPoint = -1;
-
-		const pad = this._obtainView();
-		pad.addEventListener('pointerdown', e => this._drawStart(e));
-		pad.addEventListener('pointermove', e => this._drawMove(e));
-		pad.addEventListener('pointerup', e => this._drawEnd(e));
-		pad.addEventListener('pointerleave', e => this._drawEnd(e));
+		Object.defineProperties(this, {
+			[DRAWING]: { value: false, writable: true },
+			[GROUPS]: { value: [] },
+			[CURRENT_GROUP]: { value: null, writable: true },
+			[LAST_POINT]: { value: null, writable: true },
+		});
+		this._setupListeners();
 	}
 
 	clear() {
-		this._obtainView().innerHTML = '';
+		this._obtainSurface().innerHTML = '';
+		this[GROUPS].splice(0);
 	}
 
-	toSVG() {
-
+	export(format = EXPORT_FORMATS.SVG) {
+		// let result;
+		switch (format) {
+			case EXPORT_FORMATS.SVG:
+				throw new Error('not yet supported');
+			// break;
+			case EXPORT_FORMATS.PNG:
+				throw new Error('not yet supported');
+			// break;
+			case EXPORT_FORMATS.JPG:
+				throw new Error('not yet supported');
+			// break;
+			default:
+				throw new Error(`format '${format}' is not supported, use one of those: [${Object.values(EXPORT_FORMATS).join(', ')}]`);
+		}
+		// return result;
 	}
 
-	_obtainView() {
-		return this.shadowRoot.querySelector('.sign-view');
+	_obtainSurface() {
+		return this.shadowRoot.querySelector('.draw-surface');
+	}
+
+	_setupListeners() {
+		const s = this._obtainSurface();
+		s.addEventListener('pointerdown', e => this._drawStart(e));
+		s.addEventListener('pointermove', e => this._drawMove(e));
+		s.addEventListener('pointerup', e => this._drawEnd(e));
+		s.addEventListener('pointerleave', e => this._drawEnd(e));
+		s.addEventListener('keyup', e => this._keyProc(e));
 	}
 
 	_drawStart(e) {
 		if (!e.isPrimary) {
 			return;
 		}
-		const p = {
-			x: e.offsetX,
-			y: e.offsetY,
-			w: 0
-		};
-		this._pointSets.push([p]);
-		this.currentPointSet++;
-		this.currentPoint = 0;
-		this._isDrawing = true;
+
+		//	TODO: normalize starting point width?
+		const p = { x: e.offsetX, y: e.offsetY, w: 0 };
+		const g = new Group();
+		g.points.push(p);
+		this[GROUPS].push(g);
+		this[CURRENT_GROUP] = g;
+		this[LAST_POINT] = p;
+		this[DRAWING] = true;
+	}
+
+	_drawEnd() {
+		this[DRAWING] = false;
+	}
+
+	_keyProc(e) {
+		if (e.code === 'Escape') {
+			this.clear();
+		}
 	}
 
 	_drawMove(e) {
 		//	TODO: do debounce if the distance is too small...
-		if (!this._isDrawing) {
+		if (!this[DRAWING]) {
 			return;
 		}
 
-		const cps = this._pointSets[this.currentPointSet];
-		const fromPoint = cps[this.currentPoint];
+		const cg = this[CURRENT_GROUP];
+		const fromPoint = this[LAST_POINT];
 		const toPoint = { x: e.offsetX, y: e.offsetY };
 		toPoint.w = calcWidth(fromPoint, toPoint);
+		cg.points.push(toPoint);
+		this[LAST_POINT] = toPoint;
 
 		this._paint(fromPoint, toPoint);
-
-		cps.push(toPoint);
-		this.currentPoint++;
-	}
-
-	_drawEnd() {
-		this._isDrawing = false;
 	}
 
 	_paint(fp, tp) {
+		if (!fp.w) {
+			fp.w = tp.w;
+		}
 		const dx = tp.x - fp.x;
 		const dy = tp.y - fp.y;
 		const v = Math.atan(dx / dy);
@@ -77,8 +122,8 @@ class SignPad extends ComponentBase {
 			dy1: Math.cos(ov) * tp.w / 2
 		};
 		const svgp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-		svgp.setAttribute('d', `M ${f(fp.x + n.dx0)},${f(fp.y + n.dy0)} L ${f(tp.x + n.dx1)},${f(tp.y + n.dy1)} L ${f(tp.x - n.dx1)},${f(tp.y - n.dy1)} L ${f(fp.x - n.dx0)},${f(fp.y - n.dy0)} Z`);
-		this._obtainView().appendChild(svgp);
+		svgp.setAttribute('d', `M ${roundTo(fp.x + n.dx0)},${roundTo(fp.y + n.dy0)} L ${roundTo(tp.x + n.dx1)},${roundTo(tp.y + n.dy1)} L ${roundTo(tp.x - n.dx1)},${roundTo(tp.y - n.dy1)} L ${roundTo(fp.x - n.dx0)},${roundTo(fp.y - n.dy0)} Z`);
+		this._obtainSurface().appendChild(svgp);
 	}
 
 	static get htmlUrl() {
@@ -86,33 +131,12 @@ class SignPad extends ComponentBase {
 	}
 }
 
-function f(i) {
-	return Math.floor(i * 100 + Number.EPSILON) / 100;
-}
-
 initComponent('sign-pad', SignPad);
 
-//	migrated code
-//
-// const pad = document.querySelector('.pad');
-// const ctx = pad.getContext('2d');
-// ctx.lineCap = 'round';
-// ctx.lineJoin = 'round';
-// ctx.fillStyle = 'rgb(255,255,255)';
-// ctx.fillRect(0, 0, 1200, 800);
-// ctx.fillStyle = 'rgb(0,0,0)';
-
-// document.querySelector('.clear').addEventListener('click', () => {
-// 	ctx.fillStyle = 'rgb(255,255,255)';
-// 	ctx.fillRect(0, 0, 1200, 800);
-// 	ctx.fillStyle = 'rgb(0,0,0)';
-// });
-
-// document.querySelector('.save').addEventListener('click', () => {
-// 	const durl = pad.toDataURL('image/png', 1);
-// 	console.log(durl.length);
-// 	document.querySelector('.reflect').src = durl;
-// });
+function roundTo(input, precision = 2) {
+	const p = Math.pow(10, precision);
+	return Math.floor(input * p + Number.EPSILON) / p;
+}
 
 const maxW = Math.sqrt(300 * 300 + 200 * 200);
 function calcWidth({ x: x0, y: y0 }, { x: x1, y: y1 }) {

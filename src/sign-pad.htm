@@ -6,7 +6,11 @@
 		display: inline-flex;
 	}
 
-	.sign-view,
+	:host(:focus-within) {
+		outline: 3px solid blue;
+	}
+
+	.draw-surface,
 	[name="background"]::slotted(*) {
 		position: absolute;
 		top: 0;
@@ -15,9 +19,10 @@
 		height: 100%;
 	}
 
-	.sign-view>* {
+	.draw-surface>* {
 		fill: currentColor;
+		z-index: 9;
 	}
 </style>
 <slot name="background"></slot>
-<svg xmlns="http://www.w3.org/2000/svg" class="sign-view"></svg>
+<svg xmlns="http://www.w3.org/2000/svg" tabindex="0" class="draw-surface"></svg>

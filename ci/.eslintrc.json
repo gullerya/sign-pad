@@ -3,16 +3,12 @@
 	"env": {
 		"browser": true,
 		"node": true,
-		"es2017": true
+		"es2021": true
 	},
 	"parserOptions": {
-		"ecmaVersion": 8,
 		"sourceType": "module"
 	},
 	"rules": {
 		"no-shadow": 2
-	},
-	"globals": {
-		"globalThis": false
 	}
 }
