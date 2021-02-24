@@ -1,0 +1,23 @@
+<style>
+	:host {
+		position: relative;
+		min-width: 300px;
+		min-height: 200px;
+		display: inline-flex;
+	}
+
+	.sign-view,
+	[name="background"]::slotted(*) {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.sign-view>* {
+		fill: currentColor;
+	}
+</style>
+<slot name="background"></slot>
+<svg xmlns="http://www.w3.org/2000/svg" class="sign-view"></svg>

@@ -1,11 +1,10 @@
 ﻿import os from 'os';
 import fs from 'fs';
-import path from 'path';
 import uglifyES from 'uglify-es';
 
 const
-	filesToCopy = ['sign-pad.js'],
-	filesToMinify = ['sign-pad.js'];
+	filesToCopy = ['src/sign-pad.js'],
+	filesToMinify = ['dist/sign-pad.js'];
 
 process.stdout.write(`\x1B[32mStarting the build...\x1B[0m${os.EOL}${os.EOL}`);
 
@@ -16,7 +15,7 @@ process.stdout.write(`\t\t\x1B[32mOK\x1B[0m${os.EOL}`);
 
 process.stdout.write('\tcopying "src" to "dist"...');
 for (const fileToCopy of filesToCopy) {
-	fs.copyFileSync(path.join('./src', fileToCopy), path.join('./dist', fileToCopy));
+	fs.copyFileSync(fileToCopy, fileToCopy.replace('src', 'dist'));
 }
 process.stdout.write(`\t\x1B[32mOK\x1B[0m${os.EOL}`);
 
@@ -25,8 +24,8 @@ const options = {
 	toplevel: true
 };
 for (const fileToMinify of filesToMinify) {
-	const fp = path.join('./dist', fileToMinify);
-	const mfp = path.join('./dist', fileToMinify.replace(/\.js$/, '.min.js'));
+	const fp = fileToMinify;
+	const mfp = fileToMinify.replace(/\.js$/, '.min.js');
 	const fc = fs.readFileSync(fp, { encoding: 'utf8' });
 	const mfc = uglifyES.minify(fc, options).code;
 	fs.writeFileSync(mfp, mfc);
