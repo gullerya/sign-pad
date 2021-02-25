@@ -9,6 +9,7 @@ const
 	GROUPS = Symbol('groups'),
 	CURRENT_GROUP = Symbol('current-group'),
 	LAST_POINT = Symbol('last-point'),
+	OWN_SIZE = Symbol('own-size'),
 	EXPORT_FORMATS = { SVG: 'svg', PNG: 'png', JPG: 'jpg' };
 
 class Group {
@@ -26,6 +27,7 @@ class SignPad extends ComponentBase {
 			[GROUPS]: { value: [] },
 			[CURRENT_GROUP]: { value: null, writable: true },
 			[LAST_POINT]: { value: null, writable: true },
+			[OWN_SIZE]: { value: null, writable: true }
 		});
 		this._setupListeners();
 	}
@@ -100,7 +102,11 @@ class SignPad extends ComponentBase {
 		const cg = this[CURRENT_GROUP];
 		const fromPoint = this[LAST_POINT];
 		const toPoint = { x: e.offsetX, y: e.offsetY };
-		toPoint.w = calcWidth(fromPoint, toPoint);
+		if (!this[OWN_SIZE]) {
+			this[OWN_SIZE] = this.getBoundingClientRect();
+			console.log('size taken');
+		}
+		toPoint.w = calcWidth(fromPoint, toPoint, this[OWN_SIZE]);
 		cg.points.push(toPoint);
 		this[LAST_POINT] = toPoint;
 
@@ -138,8 +144,8 @@ function roundTo(input, precision = 2) {
 	return Math.floor(input * p + Number.EPSILON) / p;
 }
 
-const maxW = Math.sqrt(300 * 300 + 200 * 200);
-function calcWidth({ x: x0, y: y0 }, { x: x1, y: y1 }) {
+function calcWidth({ x: x0, y: y0 }, { x: x1, y: y1 }, fullRect) {
+	const max = Math.sqrt(Math.pow(fullRect.width, 2) + Math.pow(fullRect.height, 2));
 	const w = Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
-	return Math.max(2, 6 - w / maxW * 40);
+	return Math.max(2, 6 - w / max * 40);
 }
