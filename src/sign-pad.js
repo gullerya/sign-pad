@@ -9,13 +9,47 @@ const
 	GROUPS = Symbol('groups'),
 	CURRENT_GROUP = Symbol('current-group'),
 	LAST_POINT = Symbol('last-point'),
-	OWN_SIZE = Symbol('own-size'),
+	FULL_DIAG_SIZE = Symbol('full-diag-size'),
 	EXPORT_FORMATS = { SVG: 'svg', PNG: 'png', JPG: 'jpg' };
+
+class Hop {
+	constructor(fp, tp) {
+		// this.fpx = fp.x;
+		// this.fpy = fp.y;
+		// this.tpx = tp.x;
+		// this.tpy = tp.y;
+		const dx = tp.x - fp.x;
+		const dy = tp.y - fp.y;
+		this.angle = Math.atan(dx / dy);
+		const diffs = this._calcRect(this.angle, fp.s, tp.s);
+
+		//	from points
+		this.fpx1 = fp.x + diffs.fdx;
+		this.fpy1 = fp.y + diffs.fdy;
+		this.fpx2 = fp.x - diffs.fdx;
+		this.fpy2 = fp.y - diffs.fdy;
+
+		//	to points
+		this.tpx1 = tp.x + diffs.tdx;
+		this.tpy1 = tp.y + diffs.tdy;
+		this.tpx2 = tp.x - diffs.tdx;
+		this.tpy2 = tp.y - diffs.tdy;
+	}
+
+	_calcRect(angle, fs, ts) {
+		const orthogAngle = angle + Math.PI / 2;
+		return {
+			fdx: Math.sin(orthogAngle) * fs / 2,
+			fdy: Math.cos(orthogAngle) * fs / 2,
+			tdx: Math.sin(orthogAngle) * ts / 2,
+			tdy: Math.cos(orthogAngle) * ts / 2
+		};
+	}
+}
 
 class Group {
 	constructor() {
-		this.points = [];
-		this.rects = [];
+		this.hops = [];
 	}
 }
 
@@ -27,7 +61,7 @@ class SignPad extends ComponentBase {
 			[GROUPS]: { value: [] },
 			[CURRENT_GROUP]: { value: null, writable: true },
 			[LAST_POINT]: { value: null, writable: true },
-			[OWN_SIZE]: { value: null, writable: true }
+			[FULL_DIAG_SIZE]: { value: null, writable: true }
 		});
 		this._setupListeners();
 	}
@@ -69,17 +103,13 @@ class SignPad extends ComponentBase {
 	}
 
 	_drawStart(e) {
-		if (!e.isPrimary) {
-			return;
-		}
+		if (!e.isPrimary) { return; }
 
-		//	TODO: normalize starting point width?
-		const p = { x: e.offsetX, y: e.offsetY, w: 0 };
+		const p = { x: e.offsetX, y: e.offsetY, s: 4 };
 		const g = new Group();
-		g.points.push(p);
+		this[LAST_POINT] = p;
 		this[GROUPS].push(g);
 		this[CURRENT_GROUP] = g;
-		this[LAST_POINT] = p;
 		this[DRAWING] = true;
 	}
 
@@ -94,41 +124,51 @@ class SignPad extends ComponentBase {
 	}
 
 	_drawMove(e) {
-		//	TODO: do debounce if the distance is too small...
-		if (!this[DRAWING]) {
-			return;
-		}
+		if (!this[DRAWING]) { return; }
 
+		const tp = { x: e.offsetX, y: e.offsetY };
+		const fp = this[LAST_POINT];
+
+		//	calcs
+		const d = this._calcDistance(fp, tp);
+		if (d < 4) { return; }
+		tp.s = this._calcStrength(d);
+		const hop = new Hop(fp, tp);
+
+		//	memorize
+		this[LAST_POINT] = tp;
 		const cg = this[CURRENT_GROUP];
-		const fromPoint = this[LAST_POINT];
-		const toPoint = { x: e.offsetX, y: e.offsetY };
-		if (!this[OWN_SIZE]) {
-			this[OWN_SIZE] = this.getBoundingClientRect();
-			console.log('size taken');
-		}
-		toPoint.w = calcWidth(fromPoint, toPoint, this[OWN_SIZE]);
-		cg.points.push(toPoint);
-		this[LAST_POINT] = toPoint;
+		cg.hops.push(hop);
 
-		this._paint(fromPoint, toPoint);
+		//	draw
+		if (cg.hops.length > 1) {
+			this._paintJoin(cg.hops[cg.hops.length - 2], hop);
+		}
+		this._paintHop(hop);
 	}
 
-	_paint(fp, tp) {
-		if (!fp.w) {
-			fp.w = tp.w;
+	_calcDistance(fp, tp) {
+		return Math.sqrt(Math.pow(tp.x - fp.x, 2) + Math.pow(tp.y - fp.y, 2));
+	}
+
+	_calcStrength(ds) {
+		let fds = this[FULL_DIAG_SIZE];
+		if (!this[FULL_DIAG_SIZE]) {
+			const r = this.getBoundingClientRect();
+			fds = this[FULL_DIAG_SIZE] = Math.sqrt(Math.pow(r.width, 2) + Math.pow(r.height, 2));
 		}
-		const dx = tp.x - fp.x;
-		const dy = tp.y - fp.y;
-		const v = Math.atan(dx / dy);
-		const ov = v - Math.PI / 2;
-		const n = {
-			dx0: Math.sin(ov) * fp.w / 2,
-			dy0: Math.cos(ov) * fp.w / 2,
-			dx1: Math.sin(ov) * tp.w / 2,
-			dy1: Math.cos(ov) * tp.w / 2
-		};
+		return Math.max(2, 4 - ds / fds * 64);
+	}
+
+	_paintJoin(fh, th) {
 		const svgp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-		svgp.setAttribute('d', `M ${roundTo(fp.x + n.dx0)},${roundTo(fp.y + n.dy0)} L ${roundTo(tp.x + n.dx1)},${roundTo(tp.y + n.dy1)} L ${roundTo(tp.x - n.dx1)},${roundTo(tp.y - n.dy1)} L ${roundTo(fp.x - n.dx0)},${roundTo(fp.y - n.dy0)} Z`);
+		svgp.setAttribute('d', `M ${roundTo(fh.tpx1)},${roundTo(fh.tpy1)} L ${roundTo(th.fpx1)},${roundTo(th.fpy1)} L ${roundTo(fh.tpx2)},${roundTo(fh.tpy2)} L ${roundTo(th.fpx2)},${roundTo(th.fpy2)} Z`);
+		this._obtainSurface().appendChild(svgp);
+	}
+
+	_paintHop(h) {
+		const svgp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		svgp.setAttribute('d', `M ${roundTo(h.fpx1)},${roundTo(h.fpy1)} L ${roundTo(h.tpx1)},${roundTo(h.tpy1)} L ${roundTo(h.tpx2)},${roundTo(h.tpy2)} L ${roundTo(h.fpx2)},${roundTo(h.fpy2)} Z`);
 		this._obtainSurface().appendChild(svgp);
 	}
 
@@ -142,10 +182,4 @@ initComponent('sign-pad', SignPad);
 function roundTo(input, precision = 2) {
 	const p = Math.pow(10, precision);
 	return Math.floor(input * p + Number.EPSILON) / p;
-}
-
-function calcWidth({ x: x0, y: y0 }, { x: x1, y: y1 }, fullRect) {
-	const max = Math.sqrt(Math.pow(fullRect.width, 2) + Math.pow(fullRect.height, 2));
-	const w = Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
-	return Math.max(2, 6 - w / max * 40);
 }

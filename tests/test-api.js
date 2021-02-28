@@ -11,6 +11,7 @@ suite.runTest({ name: 'API present basic' }, async test => {
 
 suite.runTest({ name: 'API live playground' }, () => {
 	const sp = document.createElement('sign-pad');
+	sp.style.cssText = 'width: 600px; height: 400px';
 	sp.innerHTML = '<div slot="background" style="background-color: red; opacity: 0.5"></div>';
 	document.body.appendChild(sp);
 });
