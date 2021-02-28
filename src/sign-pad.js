@@ -14,14 +14,10 @@ const
 
 class Hop {
 	constructor(fp, tp) {
-		// this.fpx = fp.x;
-		// this.fpy = fp.y;
-		// this.tpx = tp.x;
-		// this.tpy = tp.y;
 		const dx = tp.x - fp.x;
 		const dy = tp.y - fp.y;
 		this.angle = Math.atan(dx / dy);
-		const diffs = this._calcRect(this.angle, fp.s, tp.s);
+		const diffs = this._calcRect(this.angle, fp.w, tp.w);
 
 		//	from points
 		this.fpx1 = fp.x + diffs.fdx;
@@ -105,7 +101,7 @@ class SignPad extends ComponentBase {
 	_drawStart(e) {
 		if (!e.isPrimary) { return; }
 
-		const p = { x: e.offsetX, y: e.offsetY, s: 4 };
+		const p = { x: e.offsetX, y: e.offsetY, w: 4 };
 		const g = new Group();
 		this[LAST_POINT] = p;
 		this[GROUPS].push(g);
@@ -132,7 +128,7 @@ class SignPad extends ComponentBase {
 		//	calcs
 		const d = this._calcDistance(fp, tp);
 		if (d < 4) { return; }
-		tp.s = this._calcStrength(d);
+		tp.w = this._calcWeigth(d);
 		const hop = new Hop(fp, tp);
 
 		//	memorize
@@ -151,7 +147,7 @@ class SignPad extends ComponentBase {
 		return Math.sqrt(Math.pow(tp.x - fp.x, 2) + Math.pow(tp.y - fp.y, 2));
 	}
 
-	_calcStrength(ds) {
+	_calcWeigth(ds) {
 		let fds = this[FULL_DIAG_SIZE];
 		if (!this[FULL_DIAG_SIZE]) {
 			const r = this.getBoundingClientRect();
