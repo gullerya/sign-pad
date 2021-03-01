@@ -12,7 +12,11 @@ const
 	LAST_POINT = Symbol('last-point'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
 	EXPORT_FORMATS = { SVG: 'svg', PNG: 'png', JPG: 'jpg' },
-	EXPORT_DEFAULT_OPTIONS = { trim: false };
+	EXPORT_DEFAULT_OPTIONS = {
+		svg: { trim: false },
+		png: { trim: false, color: '#000', background: 'transparent' },
+		jpg: { trim: false, color: '#000', background: '#fff' }
+	};
 
 class Segment {
 	constructor(fp, tp) {
@@ -71,7 +75,7 @@ class SignPad extends ComponentBase {
 
 	export(format = EXPORT_FORMATS.SVG, options) {
 		let result;
-		const eo = Object.assign({}, EXPORT_DEFAULT_OPTIONS, options);
+		const eo = Object.assign({}, EXPORT_DEFAULT_OPTIONS[format], options);
 		switch (format) {
 			case EXPORT_FORMATS.SVG:
 				result = this._exportSvg(eo);
@@ -175,8 +179,8 @@ class SignPad extends ComponentBase {
 	_exportSvg() {
 		const source = this._obtainSurface();
 		const size = source.getBoundingClientRect();
-		const svge = document.createElementNS(SVG_NAMESPACE, 'svg');
-		svge.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
+		const target = document.createElementNS(SVG_NAMESPACE, 'svg');
+		target.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
 		let content = '';
 		for (const segment of source.children) {
 			if (segment.localName !== 'path') {
@@ -184,16 +188,50 @@ class SignPad extends ComponentBase {
 			}
 			content += segment.outerHTML;
 		}
-		svge.innerHTML = content;
-		return svge.outerHTML;
+		target.innerHTML = content;
+		return target.outerHTML;
 	}
 
-	_exportPng() {
-		throw new Error('not yet implemented');
+	_exportPng(opts) {
+		const source = this._obtainSurface();
+		const { width, height } = source.getBoundingClientRect();
+		const target = document.createElement('canvas');
+		target.width = width;
+		target.height = height;
+		const ctx = target.getContext('2d');
+		ctx.fillStyle = opts.background;
+		ctx.fillRect(0, 0, width, height);
+		ctx.fillStyle = opts.color;
+		for (const segment of source.children) {
+			if (segment.localName !== 'path') {
+				continue;
+			}
+			const p = new Path2D(segment.getAttribute('d'));
+			ctx.fill(p);
+		}
+		target.toBlob(processBlob, 'image/png');
+		downloadURI(target.toDataURL('image/png'), 'test.png');
 	}
 
-	_exportJpg() {
-		throw new Error('not yet implemented');
+	_exportJpg(opts) {
+		const source = this._obtainSurface();
+		const { width, height } = source.getBoundingClientRect();
+		const target = document.createElement('canvas');
+		target.width = width;
+		target.height = height;
+		const ctx = target.getContext('2d');
+		ctx.fillStyle = opts.background;
+		ctx.fillRect(0, 0, width, height);
+		ctx.fillStyle = opts.color;
+		for (const segment of source.children) {
+			if (segment.localName !== 'path') {
+				continue;
+			}
+			const p = new Path2D(segment.getAttribute('d'));
+			ctx.fill(p);
+		}
+		target.toBlob(processBlob, 'image/jpeg');
+		downloadURI(target.toDataURL('image/jpeg'), 'test.jpg');
 	}
 
 	static get htmlUrl() {
@@ -206,4 +244,25 @@ initComponent('sign-pad', SignPad);
 function roundTo(input, precision = 2) {
 	const p = Math.pow(10, precision);
 	return Math.floor(input * p + Number.EPSILON) / p;
+}
+
+function downloadURI(uri, name) {
+	let link = document.createElement('a');
+	link.download = name;
+	link.href = uri;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+}
+
+function processBlob(blob) {
+	var newImg = document.createElement('img'),
+		url = URL.createObjectURL(blob);
+
+	newImg.onload = function () {
+		URL.revokeObjectURL(url);
+	};
+
+	newImg.src = url;
+	document.body.appendChild(newImg);
 }

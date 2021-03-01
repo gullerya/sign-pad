@@ -17,7 +17,7 @@ suite.runTest({ name: 'API live playground' }, () => {
 
 	sp.addEventListener('keypress', e => {
 		if (e.code === 'KeyS') {
-			sp.export('svg');
+			sp.export('png');
 		}
 	});
 });
