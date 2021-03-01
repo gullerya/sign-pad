@@ -5,14 +5,16 @@ export {
 }
 
 const
+	SVG_NAMESPACE = 'http://www.w3.org/2000/svg',
 	DRAWING = Symbol('drawing'),
 	GROUPS = Symbol('groups'),
 	CURRENT_GROUP = Symbol('current-group'),
 	LAST_POINT = Symbol('last-point'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
-	EXPORT_FORMATS = { SVG: 'svg', PNG: 'png', JPG: 'jpg' };
+	EXPORT_FORMATS = { SVG: 'svg', PNG: 'png', JPG: 'jpg' },
+	EXPORT_DEFAULT_OPTIONS = { trim: false };
 
-class Hop {
+class Segment {
 	constructor(fp, tp) {
 		const dx = tp.x - fp.x;
 		const dy = tp.y - fp.y;
@@ -45,7 +47,7 @@ class Hop {
 
 class Group {
 	constructor() {
-		this.hops = [];
+		this.segments = [];
 	}
 }
 
@@ -67,22 +69,24 @@ class SignPad extends ComponentBase {
 		this[GROUPS].splice(0);
 	}
 
-	export(format = EXPORT_FORMATS.SVG) {
-		// let result;
+	export(format = EXPORT_FORMATS.SVG, options) {
+		let result;
+		const eo = Object.assign({}, EXPORT_DEFAULT_OPTIONS, options);
 		switch (format) {
 			case EXPORT_FORMATS.SVG:
-				throw new Error('not yet supported');
-			// break;
+				result = this._exportSvg(eo);
+				break;
 			case EXPORT_FORMATS.PNG:
-				throw new Error('not yet supported');
-			// break;
+				result = this._exportPng(eo);
+				break;
 			case EXPORT_FORMATS.JPG:
-				throw new Error('not yet supported');
-			// break;
+				result = this._exportJpg(eo);
+				break;
 			default:
-				throw new Error(`format '${format}' is not supported, use one of those: [${Object.values(EXPORT_FORMATS).join(', ')}]`);
+				throw new Error(`unknown format '${format}'; use one of those: [${Object.values(EXPORT_FORMATS).join(', ')}]`);
 		}
-		// return result;
+		console.log(result);
+		return result;
 	}
 
 	_obtainSurface() {
@@ -129,16 +133,16 @@ class SignPad extends ComponentBase {
 		const d = this._calcDistance(fp, tp);
 		if (d < 4) { return; }
 		tp.w = this._calcWeigth(d);
-		const hop = new Hop(fp, tp);
+		const hop = new Segment(fp, tp);
 
 		//	memorize
 		this[LAST_POINT] = tp;
 		const cg = this[CURRENT_GROUP];
-		cg.hops.push(hop);
+		cg.segments.push(hop);
 
 		//	draw
-		if (cg.hops.length > 1) {
-			this._paintJoin(cg.hops[cg.hops.length - 2], hop);
+		if (cg.segments.length > 1) {
+			this._paintJoin(cg.segments[cg.segments.length - 2], hop);
 		}
 		this._paintHop(hop);
 	}
@@ -157,15 +161,39 @@ class SignPad extends ComponentBase {
 	}
 
 	_paintJoin(fh, th) {
-		const svgp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		const svgp = document.createElementNS(SVG_NAMESPACE, 'path');
 		svgp.setAttribute('d', `M ${roundTo(fh.tpx1)},${roundTo(fh.tpy1)} L ${roundTo(th.fpx1)},${roundTo(th.fpy1)} L ${roundTo(fh.tpx2)},${roundTo(fh.tpy2)} L ${roundTo(th.fpx2)},${roundTo(th.fpy2)} Z`);
 		this._obtainSurface().appendChild(svgp);
 	}
 
 	_paintHop(h) {
-		const svgp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		const svgp = document.createElementNS(SVG_NAMESPACE, 'path');
 		svgp.setAttribute('d', `M ${roundTo(h.fpx1)},${roundTo(h.fpy1)} L ${roundTo(h.tpx1)},${roundTo(h.tpy1)} L ${roundTo(h.tpx2)},${roundTo(h.tpy2)} L ${roundTo(h.fpx2)},${roundTo(h.fpy2)} Z`);
 		this._obtainSurface().appendChild(svgp);
+	}
+
+	_exportSvg() {
+		const source = this._obtainSurface();
+		const size = source.getBoundingClientRect();
+		const svge = document.createElementNS(SVG_NAMESPACE, 'svg');
+		svge.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
+		let content = '';
+		for (const segment of source.children) {
+			if (segment.localName !== 'path') {
+				continue;
+			}
+			content += segment.outerHTML;
+		}
+		svge.innerHTML = content;
+		return svge.outerHTML;
+	}
+
+	_exportPng() {
+		throw new Error('not yet implemented');
+	}
+
+	_exportJpg() {
+		throw new Error('not yet implemented');
 	}
 
 	static get htmlUrl() {

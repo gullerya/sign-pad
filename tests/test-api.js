@@ -14,4 +14,10 @@ suite.runTest({ name: 'API live playground' }, () => {
 	sp.style.cssText = 'width: 600px; height: 400px';
 	sp.innerHTML = '<div slot="background" style="background-color: red; opacity: 0.5"></div>';
 	document.body.appendChild(sp);
+
+	sp.addEventListener('keypress', e => {
+		if (e.code === 'KeyS') {
+			sp.export('svg');
+		}
+	});
 });
