@@ -7,10 +7,14 @@ const
 	CURRENT_GROUP = Symbol('current-group'),
 	LAST_POINT = Symbol('last-point'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
+	EXPORT_DEFAULTS = {
+		trim: false,
+		color: '#000',
+		background: 'transparent'
+	},
 	EXPORT_FORMATS = {
-		svg: { defaultOptions: { trim: false, color: '#000' } },
-		png: { defaultOptions: { trim: false, color: '#000', background: 'transparent' } },
-		jpg: { defaultOptions: { trim: false, color: '#000', background: '#fff' } }
+		svg: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
+		canvas: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
 	};
 
 class Segment {
@@ -78,14 +82,9 @@ class SignPad extends ComponentBase {
 			case 'svg':
 				result = this._exportSvg(eo);
 				break;
-			case 'png':
-				result = this._exportPng(eo);
-				break;
-			case 'jpg':
-				result = this._exportJpg(eo);
-				break;
+			case 'canvas':
+				result = this._exportCanvas(eo);
 		}
-		console.log(result);
 		return result;
 	}
 
@@ -185,21 +184,10 @@ class SignPad extends ComponentBase {
 		return result.outerHTML;
 	}
 
-	_exportPng(opts) {
+	_exportCanvas(opts) {
 		const source = this._obtainSurface();
 		const rawData = extractDrawingRawData(source);
 		const result = svgToCanvas(rawData, opts);
-		result.toBlob(processBlob, 'image/png');
-		downloadURI(result.toDataURL('image/png'), 'test.png');
-		return result;
-	}
-
-	_exportJpg(opts) {
-		const source = this._obtainSurface();
-		const rawData = extractDrawingRawData(source);
-		const result = svgToCanvas(rawData, opts);
-		result.toBlob(processBlob, 'image/jpeg');
-		downloadURI(result.toDataURL('image/jpeg'), 'test.jpg');
 		return result;
 	}
 
@@ -259,25 +247,4 @@ function svgToCanvas(rawData, opts) {
 		ctx.putImageData(iData, 0, 0);
 	}
 	return result;
-}
-
-function downloadURI(uri, name) {
-	let link = document.createElement('a');
-	link.download = name;
-	link.href = uri;
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link);
-}
-
-function processBlob(blob) {
-	var newImg = document.createElement('img'),
-		url = URL.createObjectURL(blob);
-
-	newImg.onload = function () {
-		URL.revokeObjectURL(url);
-	};
-
-	newImg.src = url;
-	document.body.appendChild(newImg);
 }
