@@ -1,9 +1,5 @@
 import { ComponentBase, initComponent } from '/node_modules/rich-component/dist/rich-component.min.js';
 
-export {
-	EXPORT_FORMATS
-}
-
 const
 	SVG_NAMESPACE = 'http://www.w3.org/2000/svg',
 	DRAWING = Symbol('drawing'),
@@ -11,11 +7,10 @@ const
 	CURRENT_GROUP = Symbol('current-group'),
 	LAST_POINT = Symbol('last-point'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
-	EXPORT_FORMATS = { SVG: 'svg', PNG: 'png', JPG: 'jpg' },
-	EXPORT_DEFAULT_OPTIONS = {
-		svg: { trim: false },
-		png: { trim: false, color: '#000', background: 'transparent' },
-		jpg: { trim: false, color: '#000', background: '#fff' }
+	EXPORT_FORMATS = {
+		svg: { defaultOptions: { trim: false, color: '#000' } },
+		png: { defaultOptions: { trim: false, color: '#000', background: 'transparent' } },
+		jpg: { defaultOptions: { trim: false, color: '#000', background: '#fff' } }
 	};
 
 class Segment {
@@ -74,20 +69,21 @@ class SignPad extends ComponentBase {
 	}
 
 	export(format = EXPORT_FORMATS.SVG, options) {
+		if (!(format in EXPORT_FORMATS)) {
+			throw new Error(`unknown format '${format}'; use one of those: [${Object.keys(EXPORT_FORMATS).join(', ')}]`);
+		}
 		let result;
-		const eo = Object.assign({}, EXPORT_DEFAULT_OPTIONS[format], options);
+		const eo = Object.assign({}, EXPORT_FORMATS[format].defaultOptions, options);
 		switch (format) {
-			case EXPORT_FORMATS.SVG:
+			case 'svg':
 				result = this._exportSvg(eo);
 				break;
-			case EXPORT_FORMATS.PNG:
+			case 'png':
 				result = this._exportPng(eo);
 				break;
-			case EXPORT_FORMATS.JPG:
+			case 'jpg':
 				result = this._exportJpg(eo);
 				break;
-			default:
-				throw new Error(`unknown format '${format}'; use one of those: [${Object.values(EXPORT_FORMATS).join(', ')}]`);
 		}
 		console.log(result);
 		return result;
@@ -176,62 +172,35 @@ class SignPad extends ComponentBase {
 		this._obtainSurface().appendChild(svgp);
 	}
 
-	_exportSvg() {
+	_exportSvg(opts) {
 		const source = this._obtainSurface();
-		const size = source.getBoundingClientRect();
-		const target = document.createElementNS(SVG_NAMESPACE, 'svg');
-		target.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
-		let content = '';
-		for (const segment of source.children) {
-			if (segment.localName !== 'path') {
-				continue;
-			}
-			content += segment.outerHTML;
+		const rawData = extractDrawingRawData(source);
+		const result = document.createElementNS(SVG_NAMESPACE, 'svg');
+		for (const s of rawData.segments) {
+			result.appendChild(s);
 		}
-		target.innerHTML = content;
-		return target.outerHTML;
+		const vb = opts.trim ? result.drawRect : result.fullRect;
+		result.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+		result.setAttribute('fill', opts.color);
+		return result.outerHTML;
 	}
 
 	_exportPng(opts) {
 		const source = this._obtainSurface();
-		const { width, height } = source.getBoundingClientRect();
-		const target = document.createElement('canvas');
-		target.width = width;
-		target.height = height;
-		const ctx = target.getContext('2d');
-		ctx.fillStyle = opts.background;
-		ctx.fillRect(0, 0, width, height);
-		ctx.fillStyle = opts.color;
-		for (const segment of source.children) {
-			if (segment.localName !== 'path') {
-				continue;
-			}
-			const p = new Path2D(segment.getAttribute('d'));
-			ctx.fill(p);
-		}
-		target.toBlob(processBlob, 'image/png');
-		downloadURI(target.toDataURL('image/png'), 'test.png');
+		const rawData = extractDrawingRawData(source);
+		const result = svgToCanvas(rawData, opts);
+		result.toBlob(processBlob, 'image/png');
+		downloadURI(result.toDataURL('image/png'), 'test.png');
+		return result;
 	}
 
 	_exportJpg(opts) {
 		const source = this._obtainSurface();
-		const { width, height } = source.getBoundingClientRect();
-		const target = document.createElement('canvas');
-		target.width = width;
-		target.height = height;
-		const ctx = target.getContext('2d');
-		ctx.fillStyle = opts.background;
-		ctx.fillRect(0, 0, width, height);
-		ctx.fillStyle = opts.color;
-		for (const segment of source.children) {
-			if (segment.localName !== 'path') {
-				continue;
-			}
-			const p = new Path2D(segment.getAttribute('d'));
-			ctx.fill(p);
-		}
-		target.toBlob(processBlob, 'image/jpeg');
-		downloadURI(target.toDataURL('image/jpeg'), 'test.jpg');
+		const rawData = extractDrawingRawData(source);
+		const result = svgToCanvas(rawData, opts);
+		result.toBlob(processBlob, 'image/jpeg');
+		downloadURI(result.toDataURL('image/jpeg'), 'test.jpg');
+		return result;
 	}
 
 	static get htmlUrl() {
@@ -244,6 +213,52 @@ initComponent('sign-pad', SignPad);
 function roundTo(input, precision = 2) {
 	const p = Math.pow(10, precision);
 	return Math.floor(input * p + Number.EPSILON) / p;
+}
+
+function extractDrawingRawData(source) {
+	const result = {
+		segments: [],
+		fullRect: {},
+		drawRect: {}
+	};
+	for (const segment of source.children) {
+		if (segment.localName !== 'path') { continue; }
+		result.segments.push(segment.cloneNode());
+	}
+	const cr = source.getBoundingClientRect();
+	result.fullRect.x = cr.x;
+	result.fullRect.y = cr.y;
+	result.fullRect.w = cr.width;
+	result.fullRect.h = cr.height;
+	const bb = source.getBBox();
+	result.drawRect.x = Math.floor(bb.x);
+	result.drawRect.y = Math.floor(bb.y);
+	result.drawRect.w = Math.ceil(bb.width) + 1;
+	result.drawRect.h = Math.ceil(bb.height) + 1;
+	return result;
+}
+
+function svgToCanvas(rawData, opts) {
+	let result = document.createElement('canvas');
+	result.width = rawData.fullRect.w;
+	result.height = rawData.fullRect.h;
+	let ctx = result.getContext('2d');
+	ctx.fillStyle = opts.background;
+	ctx.fillRect(0, 0, rawData.fullRect.w, rawData.fullRect.h);
+	ctx.fillStyle = opts.color;
+	for (const s of rawData.segments) {
+		const p = new Path2D(s.getAttribute('d'));
+		ctx.fill(p);
+	}
+	if (opts.trim) {
+		const iData = ctx.getImageData(rawData.drawRect.x, rawData.drawRect.y, rawData.drawRect.w, rawData.drawRect.h);
+		result = document.createElement('canvas');
+		result.width = rawData.drawRect.w;
+		result.height = rawData.drawRect.h;
+		ctx = result.getContext('2d');
+		ctx.putImageData(iData, 0, 0);
+	}
+	return result;
 }
 
 function downloadURI(uri, name) {
