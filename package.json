@@ -50,9 +50,6 @@
 		"test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-runner-config.json",
 		"bump": "node ./ci/tools/version-utils.js"
 	},
-	"dependencies": {
-		"rich-component": "^1.8.0"
-	},
 	"devDependencies": {
 		"eslint": "^7.20.0",
 		"fs-extra": "^9.1.0",

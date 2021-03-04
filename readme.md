@@ -4,7 +4,11 @@
 
 # Usage example
 
-TBD
+Exmple below shows a full example of `sign-pad` usage: initiation, HTML, some styling to reflect focuses interaction and image extracton.
+
+```js
+import 'sign-pad';
+```
 
 # API
 

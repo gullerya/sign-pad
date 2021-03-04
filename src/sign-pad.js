@@ -7,15 +7,22 @@ const
 	CURRENT_GROUP = Symbol('current-group'),
 	LAST_POINT = Symbol('last-point'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
+	INPUT_EVENT = 'input',
+	EMPTY_CLASS = 'sign-pad-empty',
+	TRIM_KEY = 'trim',
+	INK_KEY = 'ink',
+	FILL_KEY = 'fill',
 	EXPORT_DEFAULTS = {
-		trim: false,
-		color: '#000',
-		background: 'transparent'
+		[TRIM_KEY]: false,
+		[INK_KEY]: '#000',
+		[FILL_KEY]: 'transparent'
 	},
 	EXPORT_FORMATS = {
 		svg: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
 		canvas: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
 	};
+
+const TEMPLATE = document.createElement('template');
 
 class Segment {
 	constructor(fp, tp) {
@@ -67,9 +74,19 @@ class SignPad extends ComponentBase {
 		this._setupListeners();
 	}
 
+	connectedCallback() {
+		this.classList.add(EMPTY_CLASS);
+	}
+
+	get isEmpty() {
+		return this._obtainSurface().childElementCount === 0;
+	}
+
 	clear() {
 		this._obtainSurface().innerHTML = '';
 		this[GROUPS].splice(0);
+		this.classList.add(EMPTY_CLASS);
+		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
 	export(format = EXPORT_FORMATS.SVG, options) {
@@ -104,12 +121,16 @@ class SignPad extends ComponentBase {
 	_drawStart(e) {
 		if (!e.isPrimary) { return; }
 
+		this.classList.remove(EMPTY_CLASS);
+
 		const p = { x: e.offsetX, y: e.offsetY, w: 4 };
 		const g = new Group();
 		this[LAST_POINT] = p;
 		this[GROUPS].push(g);
 		this[CURRENT_GROUP] = g;
 		this[DRAWING] = true;
+
+		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
 	_drawEnd() {
@@ -144,6 +165,9 @@ class SignPad extends ComponentBase {
 			this._paintJoin(cg.segments[cg.segments.length - 2], hop);
 		}
 		this._paintHop(hop);
+
+		//	notify
+		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
 	_calcDistance(fp, tp) {
@@ -178,9 +202,9 @@ class SignPad extends ComponentBase {
 		for (const s of rawData.segments) {
 			result.appendChild(s);
 		}
-		const vb = opts.trim ? result.drawRect : result.fullRect;
+		const vb = opts[TRIM_KEY] ? result.drawRect : result.fullRect;
 		result.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
-		result.setAttribute('fill', opts.color);
+		result.setAttribute('fill', opts[INK_KEY]);
 		return result.outerHTML;
 	}
 
@@ -191,12 +215,10 @@ class SignPad extends ComponentBase {
 		return result;
 	}
 
-	static get htmlUrl() {
-		return import.meta.url.replace(/\.js$/, '.htm');
+	static get template() {
+		return TEMPLATE;
 	}
 }
-
-initComponent('sign-pad', SignPad);
 
 function roundTo(input, precision = 2) {
 	const p = Math.pow(10, precision);
@@ -231,14 +253,14 @@ function svgToCanvas(rawData, opts) {
 	result.width = rawData.fullRect.w;
 	result.height = rawData.fullRect.h;
 	let ctx = result.getContext('2d');
-	ctx.fillStyle = opts.background;
+	ctx.fillStyle = opts[FILL_KEY];
 	ctx.fillRect(0, 0, rawData.fullRect.w, rawData.fullRect.h);
-	ctx.fillStyle = opts.color;
+	ctx.fillStyle = opts[INK_KEY];
 	for (const s of rawData.segments) {
 		const p = new Path2D(s.getAttribute('d'));
 		ctx.fill(p);
 	}
-	if (opts.trim) {
+	if (opts[TRIM_KEY]) {
 		const iData = ctx.getImageData(rawData.drawRect.x, rawData.drawRect.y, rawData.drawRect.w, rawData.drawRect.h);
 		result = document.createElement('canvas');
 		result.width = rawData.drawRect.w;
@@ -248,3 +270,41 @@ function svgToCanvas(rawData, opts) {
 	}
 	return result;
 }
+
+TEMPLATE.innerHTML = `
+	<style>
+		:host {
+			display: inline-block;
+			min-width: 300px;
+			min-height: 200px;
+			contain: strict;
+		}
+
+		.container {
+			position: relative;
+			width: 100%;
+			height: 100%;
+		}
+
+		.draw-surface,
+		[name="background"]::slotted(*) {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			outline: none;
+		}
+
+		.draw-surface > * {
+			fill: currentColor;
+			z-index: 9;
+		}
+	</style>
+	<div class="container">
+		<slot name="background"></slot>
+		<svg xmlns="http://www.w3.org/2000/svg" tabindex="0" class="draw-surface"></svg>
+	</div>
+`;
+
+initComponent('sign-pad', SignPad);
