@@ -5,10 +5,9 @@
 	},
 	"coverage": {
 		"include": [
-			"^\/src\/.+"
+			"^\/dist\/.+"
 		],
 		"exclude": [
-			"^\/src\/node\/.+",
 			".+\\.min\\.js$"
 		]
 	},

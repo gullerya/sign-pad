@@ -1,6 +1,6 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
 import { simulateDrawing, simulateEscapeKey, obtainSurface } from './utils.js';
-import '/dist/sign-pad.min.js?cname=sign-pad-x';
+import '/dist/sign-pad.js?cname=sign-pad-x';
 
 const suite = getSuite({ name: 'API' });
 const ename = 'sign-pad-x';
