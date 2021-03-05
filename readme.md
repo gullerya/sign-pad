@@ -1,7 +1,7 @@
 [![npm](https://img.shields.io/npm/v/sign-pad.svg?label=npm%20sign-pad)](https://www.npmjs.com/package/sign-pad)
 [![GitHub](https://img.shields.io/github/license/gullerya/sign-pad.svg)](https://github.com/gullerya/sign-pad)
 
-[![Quality pipeline](https://github.com/gullerya/sign-pad/workflows/Quality%20pipeline/badge.svg?branch=master)](https://github.com/gullerya/sign-pad/actions?query=workflow%3A%22Quality+pipeline%22)
+[![Quality pipeline](https://github.com/gullerya/sign-pad/actions/workflows/quality.yml/badge.svg)](https://github.com/gullerya/sign-pad/actions/workflows/quality.yml)
 [![Codecov](https://img.shields.io/codecov/c/github/gullerya/sign-pad/master.svg)](https://codecov.io/gh/gullerya/sign-pad/branch/master)
 [![Codacy](https://img.shields.io/codacy/grade/375f658061bf4150b8a9125b5fe460ae.svg?logo=codacy)](https://www.codacy.com/app/gullerya/sign-pad)
 
