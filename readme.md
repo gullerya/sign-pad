@@ -14,6 +14,15 @@
 	- export as **SVG** or **canvas**
 	- opt-in **trim** whitespace around the signature if needed
 	- configurable **ink** and **fill** (background) of the exported image
+- convenient interop API:
+	- **empty** state reflected as property and attribute (for easy state based styling and logic)
+	- `input` event upon each signature drawing touch (including clear)
+
+The following picture produced by a simple example of `sign-pad` usage in [this CodePen](https://codepen.io/gullerya/pen/ZEBbGeO):
+
+<p align="center">
+	<img src="docs/images/example.png" alt="sign-pad example" width="240px"/>
+</p>
 
 # Usage example
 
