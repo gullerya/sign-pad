@@ -20,9 +20,7 @@
 
 The following picture produced by a simple example of `sign-pad` usage in [this CodePen](https://codepen.io/gullerya/pen/ZEBbGeO):
 
-<p align="center">
-	<img src="docs/images/example.png" alt="sign-pad example" width="240px"/>
-</p>
+<img src="docs/images/example.png" alt="sign-pad example" width="240px"/>
 
 # Usage example
 
