@@ -18,7 +18,7 @@ Having that, use the component directly in HTML:
 
 ## Visual customization
 
-`sign-pad` provides visual customizations via slots and attributes.
+`sign-pad` provides visual customizations via slots and attributes, as well as basic stylng inheritance.
 
 ### Slots
 
@@ -31,6 +31,12 @@ Having that, use the component directly in HTML:
 | Attribute | Property  | Type      | Description |
 |-----------|-----------|-----------|-------------|
 | `empty`   | `empty`   | `boolean` | `true` (attribute present) when the signature surface is empty, otherwise `false` (attribute absent) |
+
+Additionally, `sign-pad` is suited for a simple CSS styling:
+- use `color` to set an ink color of the drawing pen
+- use `background` for a simple back-fill (saving the slot for a complex HTML, if/when needed)
+
+Note, however, that those adjustments will have visual effect only. In order to affect the color or back-fill of the exported drawing use dedicated API, as described below.
 
 ## Methods
 
