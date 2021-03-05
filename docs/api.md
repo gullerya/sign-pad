@@ -39,13 +39,13 @@ Having that, use the component directly in HTML:
 | `clear()`                 | clears the signature surface |
 | `export(format, options)` | exports the signature as per format and options, see below for further info |
 
-### Formats:
-|          |           |
-|----------|-----------|
+### `format` (string):
+| Value    | Description |
+|----------|-------------|
 | `svg`    | exports signature drawing as `SVGElement`, which can be further operated on or just stored as ready to use one (the whole content is availbale via `outerHTML` property, for example) |
 | `canvas` | exports signature drawing as `HTMLCanvasElement`, which can be further operated on (see `toBlob` and `toDataURL` methods documentation) |
 
-### Options:
+### `options` (object):
 | Property | Type      | Default       | Descriptions |
 |----------|-----------|---------------|--------------|
 | `trim`   | `boolean` | `false`       | when `true`, the exported image will have trimmed the white space around the actual signature drawing |
