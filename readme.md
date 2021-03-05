@@ -15,8 +15,8 @@
 	- opt-in **trim** whitespace around the signature if needed
 	- configurable **ink** and **fill** (background) of the exported image
 - convenient interop API:
-	- **empty** state reflected as property and attribute (for easy state based styling and logic)
-	- `input` event upon each signature drawing touch (including clear)
+	- **empty** state reflected as property and attribute (for easy state-based styling and logic)
+	- `input` event fired upon each signature drawing touch (including clear)
 
 The following picture produced by a simple example of `sign-pad` usage in [this CodePen](https://codepen.io/gullerya/pen/ZEBbGeO):
 
@@ -24,14 +24,52 @@ The following picture produced by a simple example of `sign-pad` usage in [this 
 
 # Usage example
 
-Exmple below shows a full example of `sign-pad` usage: initiation, HTML, some styling to reflect focuses interaction and image extracton.
+Exmple below shows an essense of `sign-pad` usage: initializaion, HTML, state-based styling and JS logic.
+
+Staring with HTML as it is a simplest and shortest part:
+```html
+<sign-pad class="sipad"></sign-pad>
+
+<style>
+	.sipad[empty] {
+		outline: 2px solid red;
+	}
+</style>
+```
+
+Now to the logic:
 
 ```js
-import 'sign-pad';
+import 'sign-pad.min.js';
+
+const sp = document.querySelector('.sipad');
+
+//	rest of the APIs available via the instance:
+sp.addEventListener('input', e => {});
+
+const asSvg = sp.export('svg', { trim: true, ink: 'blue' });
 ```
+
+# Install
+
+Use regular `npm install sign-pad --save-prod` to use the component from your local environment.
+
+Additionally, a **CDN** deployment available (AWS driven), so one can import the component directly:
+```js
+import 'https://libs.gullerya.com/sign-pad/1.0.0/sign-pad.min.js';
+```
+
+> Note: replace the `1.0.0` by the desired version.
+
+CDN features:
+- HTTPS only, no untrusted man-in-the-middle
+- highly available (with many geo spread edges)
+- agressive caching setup
 
 # API
 
-`sign-pad` functionality exposed as the fully-featured web-component, via the properties, methods and events of an actual DOM instance.
+Full API documentation found [here](docs/api.md).
 
-Full API documentation found [here](./docs/api.md).
+# Changelog
+
+Full changelog found [here](docs/changelog.md).

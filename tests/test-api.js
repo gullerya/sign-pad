@@ -5,12 +5,12 @@ import '/dist/sign-pad.js?cname=sign-pad-x';
 const suite = getSuite({ name: 'API - base, attributes, properties, methods' });
 const ename = 'sign-pad-x';
 
-suite.runTest({ name: 'component defined' }, async test => {
+suite.runTest({ name: 'component defined' }, test => {
 	const ie = globalThis.customElements.get(ename);
 	test.assertTrue(Boolean(ie));
 });
 
-suite.runTest({ name: 'has content when drawn' }, async test => {
+suite.runTest({ name: 'has content when drawn' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	test.assertEqual(0, obtainSurface(e).childElementCount);
@@ -18,7 +18,7 @@ suite.runTest({ name: 'has content when drawn' }, async test => {
 	test.assertEqual(3, obtainSurface(e).childElementCount);
 });
 
-suite.runTest({ name: 'has no content when clear (API)' }, async test => {
+suite.runTest({ name: 'has no content when clear (API)' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -27,7 +27,7 @@ suite.runTest({ name: 'has no content when clear (API)' }, async test => {
 	test.assertEqual(0, obtainSurface(e).childElementCount);
 });
 
-suite.runTest({ name: 'has no content when clear (Escape simulation)' }, async test => {
+suite.runTest({ name: 'has no content when clear (Escape simulation)' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -36,7 +36,7 @@ suite.runTest({ name: 'has no content when clear (Escape simulation)' }, async t
 	test.assertEqual(0, obtainSurface(e).childElementCount);
 });
 
-suite.runTest({ name: 'empty state true (present) when created' }, async test => {
+suite.runTest({ name: 'empty state true (present) when created' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	obtainSurface(e);
@@ -44,7 +44,7 @@ suite.runTest({ name: 'empty state true (present) when created' }, async test =>
 	test.assertTrue(e.hasAttribute('empty'));
 });
 
-suite.runTest({ name: 'empty state false (absent) when drawn' }, async test => {
+suite.runTest({ name: 'empty state false (absent) when drawn' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -52,7 +52,7 @@ suite.runTest({ name: 'empty state false (absent) when drawn' }, async test => {
 	test.assertFalse(e.hasAttribute('empty'));
 });
 
-suite.runTest({ name: 'empty state true (present) when clear' }, async test => {
+suite.runTest({ name: 'empty state true (present) when clear' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -60,7 +60,7 @@ suite.runTest({ name: 'empty state true (present) when clear' }, async test => {
 	test.assertFalse(e.hasAttribute('empty'));
 });
 
-suite.runTest({ name: 'export to SVG produces SVG' }, async test => {
+suite.runTest({ name: 'export to SVG produces SVG' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -68,7 +68,7 @@ suite.runTest({ name: 'export to SVG produces SVG' }, async test => {
 	test.assertEqual('svg', expSVG.localName);
 });
 
-suite.runTest({ name: 'export to canvas produces canvas' }, async test => {
+suite.runTest({ name: 'export to canvas produces canvas' }, test => {
 	const e = document.createElement(ename);
 	document.body.appendChild(e);
 	simulateDrawing(e);

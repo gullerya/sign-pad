@@ -14,11 +14,11 @@ Having that, use the component directly in HTML:
 <sign-pad></sign-pad>
 ```
 
-`sign-pad` will render a drawing surface, track user interactions with it and provide the rest of the APIs via properties, methods and events directly with the DOM instance.
+`sign-pad` will render a drawing surface, track user interactions with it and provide the rest of the APIs via properties, methods and events directly from the DOM instance.
 
 ## Visual customization
 
-`sign-pad` provides visual customizations via slots, classes and CSS variables.
+`sign-pad` provides visual customizations via slots and attributes.
 
 ### Slots
 
@@ -46,13 +46,15 @@ Having that, use the component directly in HTML:
 | `canvas` | exports signature drawing as `HTMLCanvasElement`, which can be further operated on (see `toBlob` and `toDataURL` methods documentation) |
 
 ### `options` (object):
-| Property | Type      | Default       | Descriptions |
-|----------|-----------|---------------|--------------|
+| Property | Type      | Default       | Description |
+|----------|-----------|---------------|-------------|
 | `trim`   | `boolean` | `false`       | when `true`, the exported image will have trimmed the white space around the actual signature drawing |
 | `ink`    | `string`  | `#000`        | standard CSS color (hex / rgba) to be used as the ink of the exported signature |
 | `fill`   | `string`  | `transparent` | standard CSS color (hex / rgba) to be used as the background fill of the exported image |
 
-> Note: if JPEG format is your end target, use colored `fill` (eg `#fff`), since `transparent` is not supported by JPEG and will result in a black fill.
+> Note: in SVG case non-default `fill` is done via inline `style` attribute, take care if you plan to style it further that way.
+
+> Note: for JPEG format use colorful `fill` (eg `#fff`), JPEG does not support `transparent` background.
 
 ## Events
 

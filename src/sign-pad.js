@@ -210,6 +210,9 @@ class SignPad extends HTMLElement {
 		const vb = opts[TRIM_KEY] ? rawData.drawRect : rawData.fullRect;
 		result.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
 		result.setAttribute('fill', opts[INK_KEY]);
+		if (opts[FILL_KEY] !== EXPORT_DEFAULTS[FILL_KEY]) {
+			result.setAttribute('style', `background:${opts[FILL_KEY]}`);
+		}
 		return result;
 	}
 
@@ -227,12 +230,12 @@ TEMPLATE.innerHTML = `
 			display: inline-block;
 			min-width: 300px;
 			min-height: 200px;
-			contain: strict;
+			width: 300px;
+			height: 200px;
 		}
 
 		.container {
 			position: relative;
-			display: contents;
 			width: 100%;
 			height: 100%;
 		}

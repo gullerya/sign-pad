@@ -20,8 +20,8 @@ function extractSvgRawData(source) {
 		result.segments.push(segment.cloneNode());
 	}
 	const cr = source.getBoundingClientRect();
-	result.fullRect.x = cr.x;
-	result.fullRect.y = cr.y;
+	result.fullRect.x = 0;
+	result.fullRect.y = 0;
 	result.fullRect.w = cr.width;
 	result.fullRect.h = cr.height;
 	const bb = source.getBBox();
