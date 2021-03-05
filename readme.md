@@ -3,7 +3,7 @@
 
 [![Quality pipeline](https://github.com/gullerya/sign-pad/workflows/Quality%20pipeline/badge.svg?branch=master)](https://github.com/gullerya/sign-pad/actions?query=workflow%3A%22Quality+pipeline%22)
 [![Codecov](https://img.shields.io/codecov/c/github/gullerya/sign-pad/master.svg)](https://codecov.io/gh/gullerya/sign-pad/branch/master)
-[![Codacy](https://img.shields.io/codacy/grade/a3879d7077eb4eef83a591733ad7c579.svg?logo=codacy)](https://www.codacy.com/app/gullerya/sign-pad)
+[![Codacy](https://img.shields.io/codacy/grade/375f658061bf4150b8a9125b5fe460ae.svg?logo=codacy)](https://www.codacy.com/app/gullerya/sign-pad)
 
 # Summary
 
