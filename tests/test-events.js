@@ -1,5 +1,5 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
-import '/src/sign-pad.js';
+import '/dist/sign-pad.js';
 
 const suite = getSuite({ name: 'Events' });
 

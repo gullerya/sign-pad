@@ -1,14 +1,17 @@
-import { ComponentBase, initComponent } from '/node_modules/rich-component/dist/rich-component.min.js';
+import { roundTo, extractSvgRawData, svgToCanvas } from './sign-pad-utils.js';
 
 const
+	HTML_TAG = new URL(import.meta.url).searchParams.get('cname') || 'sign-pad',
+	SURFACE_CLASS = 'surface',
 	SVG_NAMESPACE = 'http://www.w3.org/2000/svg',
 	DRAWING = Symbol('drawing'),
 	GROUPS = Symbol('groups'),
+	EMPTY_STATE = Symbol('empty-state'),
 	CURRENT_GROUP = Symbol('current-group'),
 	LAST_POINT = Symbol('last-point'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
 	INPUT_EVENT = 'input',
-	EMPTY_CLASS = 'sign-pad-empty',
+	ATTRIBUTE_EMPTY = 'empty',
 	TRIM_KEY = 'trim',
 	INK_KEY = 'ink',
 	FILL_KEY = 'fill',
@@ -61,12 +64,14 @@ class Group {
 	}
 }
 
-class SignPad extends ComponentBase {
+class SignPad extends HTMLElement {
 	constructor() {
 		super();
+		this.attachShadow({ mode: 'open' }).appendChild(TEMPLATE.content.cloneNode(true));
 		Object.defineProperties(this, {
 			[DRAWING]: { value: false, writable: true },
 			[GROUPS]: { value: [] },
+			[EMPTY_STATE]: { value: true, writable: true },
 			[CURRENT_GROUP]: { value: null, writable: true },
 			[LAST_POINT]: { value: null, writable: true },
 			[FULL_DIAG_SIZE]: { value: null, writable: true }
@@ -75,17 +80,18 @@ class SignPad extends ComponentBase {
 	}
 
 	connectedCallback() {
-		this.classList.add(EMPTY_CLASS);
+		this.setAttribute(ATTRIBUTE_EMPTY, '');
 	}
 
-	get isEmpty() {
-		return this._obtainSurface().childElementCount === 0;
+	get empty() {
+		return this[EMPTY_STATE];
 	}
 
 	clear() {
 		this._obtainSurface().innerHTML = '';
 		this[GROUPS].splice(0);
-		this.classList.add(EMPTY_CLASS);
+		this[EMPTY_STATE] = true;
+		this.setAttribute(ATTRIBUTE_EMPTY, '');
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
@@ -93,20 +99,17 @@ class SignPad extends ComponentBase {
 		if (!(format in EXPORT_FORMATS)) {
 			throw new Error(`unknown format '${format}'; use one of those: [${Object.keys(EXPORT_FORMATS).join(', ')}]`);
 		}
-		let result;
 		const eo = Object.assign({}, EXPORT_FORMATS[format].defaultOptions, options);
 		switch (format) {
 			case 'svg':
-				result = this._exportSvg(eo);
-				break;
+				return this._exportSvg(eo);
 			case 'canvas':
-				result = this._exportCanvas(eo);
+				return this._exportCanvas(eo);
 		}
-		return result;
 	}
 
 	_obtainSurface() {
-		return this.shadowRoot.querySelector('.draw-surface');
+		return this.shadowRoot.querySelector(`.${SURFACE_CLASS}`);
 	}
 
 	_setupListeners() {
@@ -120,8 +123,6 @@ class SignPad extends ComponentBase {
 
 	_drawStart(e) {
 		if (!e.isPrimary) { return; }
-
-		this.classList.remove(EMPTY_CLASS);
 
 		const p = { x: e.offsetX, y: e.offsetY, w: 4 };
 		const g = new Group();
@@ -167,6 +168,10 @@ class SignPad extends ComponentBase {
 		this._paintHop(hop);
 
 		//	notify
+		if (this[EMPTY_STATE]) {
+			this[EMPTY_STATE] = false;
+			this.removeAttribute(ATTRIBUTE_EMPTY);
+		}
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
@@ -197,7 +202,7 @@ class SignPad extends ComponentBase {
 
 	_exportSvg(opts) {
 		const source = this._obtainSurface();
-		const rawData = extractDrawingRawData(source);
+		const rawData = extractSvgRawData(source);
 		const result = document.createElementNS(SVG_NAMESPACE, 'svg');
 		for (const s of rawData.segments) {
 			result.appendChild(s);
@@ -210,65 +215,10 @@ class SignPad extends ComponentBase {
 
 	_exportCanvas(opts) {
 		const source = this._obtainSurface();
-		const rawData = extractDrawingRawData(source);
-		const result = svgToCanvas(rawData, opts);
+		const rawData = extractSvgRawData(source);
+		const result = svgToCanvas(rawData, opts[INK_KEY], opts[FILL_KEY], opts[TRIM_KEY]);
 		return result;
 	}
-
-	static get template() {
-		return TEMPLATE;
-	}
-}
-
-function roundTo(input, precision = 2) {
-	const p = Math.pow(10, precision);
-	return Math.floor(input * p + Number.EPSILON) / p;
-}
-
-function extractDrawingRawData(source) {
-	const result = {
-		segments: [],
-		fullRect: {},
-		drawRect: {}
-	};
-	for (const segment of source.children) {
-		if (segment.localName !== 'path') { continue; }
-		result.segments.push(segment.cloneNode());
-	}
-	const cr = source.getBoundingClientRect();
-	result.fullRect.x = cr.x;
-	result.fullRect.y = cr.y;
-	result.fullRect.w = cr.width;
-	result.fullRect.h = cr.height;
-	const bb = source.getBBox();
-	result.drawRect.x = Math.floor(bb.x);
-	result.drawRect.y = Math.floor(bb.y);
-	result.drawRect.w = Math.ceil(bb.width) + 1;
-	result.drawRect.h = Math.ceil(bb.height) + 1;
-	return result;
-}
-
-function svgToCanvas(rawData, opts) {
-	let result = document.createElement('canvas');
-	result.width = rawData.fullRect.w;
-	result.height = rawData.fullRect.h;
-	let ctx = result.getContext('2d');
-	ctx.fillStyle = opts[FILL_KEY];
-	ctx.fillRect(0, 0, rawData.fullRect.w, rawData.fullRect.h);
-	ctx.fillStyle = opts[INK_KEY];
-	for (const s of rawData.segments) {
-		const p = new Path2D(s.getAttribute('d'));
-		ctx.fill(p);
-	}
-	if (opts[TRIM_KEY]) {
-		const iData = ctx.getImageData(rawData.drawRect.x, rawData.drawRect.y, rawData.drawRect.w, rawData.drawRect.h);
-		result = document.createElement('canvas');
-		result.width = rawData.drawRect.w;
-		result.height = rawData.drawRect.h;
-		ctx = result.getContext('2d');
-		ctx.putImageData(iData, 0, 0);
-	}
-	return result;
 }
 
 TEMPLATE.innerHTML = `
@@ -282,11 +232,12 @@ TEMPLATE.innerHTML = `
 
 		.container {
 			position: relative;
+			display: contents;
 			width: 100%;
 			height: 100%;
 		}
 
-		.draw-surface,
+		.${SURFACE_CLASS},
 		[name="background"]::slotted(*) {
 			position: absolute;
 			top: 0;
@@ -296,15 +247,18 @@ TEMPLATE.innerHTML = `
 			outline: none;
 		}
 
-		.draw-surface > * {
+		.${SURFACE_CLASS} > * {
 			fill: currentColor;
-			z-index: 9;
+		}
+
+		[name="background"]::slotted(*) {
+			pointer-events: none;
 		}
 	</style>
 	<div class="container">
 		<slot name="background"></slot>
-		<svg xmlns="http://www.w3.org/2000/svg" tabindex="0" class="draw-surface"></svg>
+		<svg xmlns="http://www.w3.org/2000/svg" tabindex="0" class="${SURFACE_CLASS}"></svg>
 	</div>
 `;
 
-initComponent('sign-pad', SignPad);
+customElements.define(HTML_TAG, SignPad);

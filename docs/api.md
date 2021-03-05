@@ -26,23 +26,11 @@ Having that, use the component directly in HTML:
 |--------------|-------------|
 | `background` | slotted `background`, if any, will be shown beneath the signature drawing surface, useful to show visual hints like directing base line etc |
 
-### Classes
+## Attributes/Properties
 
-| Class            | Description |
-|------------------|-------------|
-| `sign-pad-empty` | this class will be added to the component self (host) whenever the surface is empty, to allow styling customization as per empty/non-empty state |
-
-### CSS variables
-
-| Slot name    | Description |
-|--------------|-------------|
-| `background` | slotted `background`, if any, will be shown beneath the signature drawing surface, useful to show visual hints like directing base line etc |
-
-## Properties
-
-| Property  | Type      | Description |
-|-----------|-----------|-------------|
-| `isEmpty` | `boolean` | `true` when the signature surface is empty, otherwise `false` |
+| Attribute | Property  | Type      | Description |
+|-----------|-----------|-----------|-------------|
+| `empty`   | `empty`   | `boolean` | `true` (attribute present) when the signature surface is empty, otherwise `false` (attribute absent) |
 
 ## Methods
 
