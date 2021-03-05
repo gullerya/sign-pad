@@ -207,10 +207,10 @@ class SignPad extends HTMLElement {
 		for (const s of rawData.segments) {
 			result.appendChild(s);
 		}
-		const vb = opts[TRIM_KEY] ? result.drawRect : result.fullRect;
+		const vb = opts[TRIM_KEY] ? rawData.drawRect : rawData.fullRect;
 		result.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
 		result.setAttribute('fill', opts[INK_KEY]);
-		return result.outerHTML;
+		return result;
 	}
 
 	_exportCanvas(opts) {

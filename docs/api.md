@@ -34,13 +34,18 @@ Having that, use the component directly in HTML:
 
 ## Methods
 
-| Signature                          | Description |
-|------------------------------------|-------------|
-| `clear()`                          | clears the signature surface |
-| `toSvg(options: ExportOptions)`    | exports the signature as SVG (full SVG text) |
-| `toCanvas(options: ExportOptions)` | exports the signature as `canvas` element |
+| Signature                 | Description |
+|---------------------------|-------------|
+| `clear()`                 | clears the signature surface |
+| `export(format, options)` | exports the signature as per format and options, see below for further info |
 
-### `ExportOptions`
+### Formats:
+|          |           |
+|----------|-----------|
+| `svg`    | exports signature drawing as `SVGElement`, which can be further operated on or just stored as ready to use one (the whole content is availbale via `outerHTML` property, for example) |
+| `canvas` | exports signature drawing as `HTMLCanvasElement`, which can be further operated on (see `toBlob` and `toDataURL` methods documentation) |
+
+### Options:
 | Property | Type      | Default       | Descriptions |
 |----------|-----------|---------------|--------------|
 | `trim`   | `boolean` | `false`       | when `true`, the exported image will have trimmed the white space around the actual signature drawing |
