@@ -8,7 +8,7 @@ const
 	LOCAL_NAME = new URL(import.meta.url).searchParams.get('local-name') || 'sign-pad',
 	SURFACE_CLASS = 'surface',
 	SVG_NAMESPACE = 'http://www.w3.org/2000/svg',
-	DRAWING = Symbol('drawing'),
+	ACTIVE_POINTER = Symbol('active-pointer'),
 	GROUPS = Symbol('groups'),
 	EMPTY_STATE = Symbol('empty-state'),
 	CURRENT_GROUP = Symbol('current-group'),
@@ -73,7 +73,7 @@ class SignPad extends HTMLElement {
 		super();
 		this.attachShadow({ mode: 'open' }).appendChild(TEMPLATE.content.cloneNode(true));
 		Object.defineProperties(this, {
-			[DRAWING]: { value: false, writable: true },
+			[ACTIVE_POINTER]: { value: null, writable: true },
 			[GROUPS]: { value: [] },
 			[EMPTY_STATE]: { value: true, writable: true },
 			[CURRENT_GROUP]: { value: null, writable: true },
@@ -122,24 +122,32 @@ class SignPad extends HTMLElement {
 		s.addEventListener('pointermove', e => this._drawMove(e));
 		s.addEventListener('pointerup', e => this._drawEnd(e));
 		s.addEventListener('pointerleave', e => this._drawEnd(e));
+		s.addEventListener('pointercancel', e => this._drawEnd(e));
+
 		s.addEventListener('keyup', e => this._keyProc(e));
 	}
 
 	_drawStart(e) {
 		if (!e.isPrimary) { return; }
+		const pid = e.pointerId;
+		if (this[ACTIVE_POINTER] && pid !== this[ACTIVE_POINTER]) {
+			return;
+		}
 
+		this[ACTIVE_POINTER] = pid;
 		const p = { x: e.offsetX, y: e.offsetY, w: 4 };
 		const g = new Group();
 		this[LAST_POINT] = p;
 		this[GROUPS].push(g);
 		this[CURRENT_GROUP] = g;
-		this[DRAWING] = true;
 
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
-	_drawEnd() {
-		this[DRAWING] = false;
+	_drawEnd(e) {
+		if (e.pointerId === this[ACTIVE_POINTER]) {
+			this[ACTIVE_POINTER] = null;
+		}
 	}
 
 	_keyProc(e) {
@@ -149,7 +157,7 @@ class SignPad extends HTMLElement {
 	}
 
 	_drawMove(e) {
-		if (!this[DRAWING]) { return; }
+		if (e.pointerId !== this[ACTIVE_POINTER]) { return; }
 
 		const tp = { x: e.offsetX, y: e.offsetY };
 		const fp = this[LAST_POINT];
