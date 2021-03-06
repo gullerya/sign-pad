@@ -1,4 +1,4 @@
-import { roundTo, extractSvgRawData, svgToCanvas } from './sign-pad-utils.js';
+import { roundTo as r, extractSvgRawData, svgToCanvas } from './sign-pad-utils.js';
 
 export {
 	LOCAL_NAME
@@ -8,12 +8,14 @@ const
 	LOCAL_NAME = new URL(import.meta.url).searchParams.get('local-name') || 'sign-pad',
 	SURFACE_CLASS = 'surface',
 	SVG_NAMESPACE = 'http://www.w3.org/2000/svg',
+	SURFACE = Symbol('surface'),
 	ACTIVE_POINTER = Symbol('active-pointer'),
-	GROUPS = Symbol('groups'),
 	EMPTY_STATE = Symbol('empty-state'),
 	CURRENT_GROUP = Symbol('current-group'),
-	LAST_POINT = Symbol('last-point'),
+	CURRENT_POINT = Symbol('current-point'),
+	CURRENT_HOP = Symbol('current-hop'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
+	INERTION_POWER = 0.4,
 	INPUT_EVENT = 'input',
 	ATTRIBUTE_EMPTY = 'empty',
 	TRIM_KEY = 'trim',
@@ -31,11 +33,11 @@ const
 
 const TEMPLATE = document.createElement('template');
 
-class Segment {
+class Hop {
 	constructor(fp, tp) {
 		const dx = tp.x - fp.x;
 		const dy = tp.y - fp.y;
-		this.angle = Math.atan(dx / dy);
+		this.angle = Math.atan(dy / dx);
 		const diffs = this._calcRect(this.angle, fp.w, tp.w);
 
 		//	from points
@@ -53,18 +55,14 @@ class Segment {
 
 	_calcRect(angle, fs, ts) {
 		const orthogAngle = angle + Math.PI / 2;
+		const c = Math.cos(orthogAngle);
+		const s = Math.sin(orthogAngle);
 		return {
-			fdx: Math.sin(orthogAngle) * fs / 2,
-			fdy: Math.cos(orthogAngle) * fs / 2,
-			tdx: Math.sin(orthogAngle) * ts / 2,
-			tdy: Math.cos(orthogAngle) * ts / 2
+			fdx: c * fs / 2,
+			fdy: s * fs / 2,
+			tdx: c * ts / 2,
+			tdy: s * ts / 2
 		};
-	}
-}
-
-class Group {
-	constructor() {
-		this.segments = [];
 	}
 }
 
@@ -73,11 +71,12 @@ class SignPad extends HTMLElement {
 		super();
 		this.attachShadow({ mode: 'open' }).appendChild(TEMPLATE.content.cloneNode(true));
 		Object.defineProperties(this, {
+			[SURFACE]: { value: this.shadowRoot.querySelector(`.${SURFACE_CLASS}`) },
 			[ACTIVE_POINTER]: { value: null, writable: true },
-			[GROUPS]: { value: [] },
 			[EMPTY_STATE]: { value: true, writable: true },
 			[CURRENT_GROUP]: { value: null, writable: true },
-			[LAST_POINT]: { value: null, writable: true },
+			[CURRENT_POINT]: { value: null, writable: true },
+			[CURRENT_HOP]: { value: null, writable: true },
 			[FULL_DIAG_SIZE]: { value: null, writable: true }
 		});
 		this._setupListeners();
@@ -92,8 +91,7 @@ class SignPad extends HTMLElement {
 	}
 
 	clear() {
-		this._obtainSurface().innerHTML = '';
-		this[GROUPS].splice(0);
+		this[SURFACE].innerHTML = '';
 		this[EMPTY_STATE] = true;
 		this.setAttribute(ATTRIBUTE_EMPTY, '');
 		this.dispatchEvent(new Event(INPUT_EVENT));
@@ -112,12 +110,8 @@ class SignPad extends HTMLElement {
 		}
 	}
 
-	_obtainSurface() {
-		return this.shadowRoot.querySelector(`.${SURFACE_CLASS}`);
-	}
-
 	_setupListeners() {
-		const s = this._obtainSurface();
+		const s = this[SURFACE];
 		s.addEventListener('pointerdown', e => this._drawStart(e));
 		s.addEventListener('pointermove', e => this._drawMove(e));
 		s.addEventListener('pointerup', e => this._drawEnd(e));
@@ -135,13 +129,9 @@ class SignPad extends HTMLElement {
 		}
 
 		this[ACTIVE_POINTER] = pid;
-		const p = { x: e.offsetX, y: e.offsetY, w: 4 };
-		const g = new Group();
-		this[LAST_POINT] = p;
-		this[GROUPS].push(g);
-		this[CURRENT_GROUP] = g;
-
-		this.dispatchEvent(new Event(INPUT_EVENT));
+		this[CURRENT_GROUP] = [];
+		this[CURRENT_POINT] = { x: e.offsetX, y: e.offsetY, w: 4 };
+		this[CURRENT_HOP] = null;
 	}
 
 	_drawEnd(e) {
@@ -160,24 +150,36 @@ class SignPad extends HTMLElement {
 		if (e.pointerId !== this[ACTIVE_POINTER]) { return; }
 
 		const tp = { x: e.offsetX, y: e.offsetY };
-		const fp = this[LAST_POINT];
+		const fp = this[CURRENT_POINT];
 
 		//	calcs
 		const d = this._calcDistance(fp, tp);
 		if (d < 4) { return; }
 		tp.w = this._calcWeigth(d);
-		const hop = new Segment(fp, tp);
+		const hop = new Hop(fp, tp);
+		let adj = null;
+		let adj_to = null;
+		if (this[CURRENT_HOP]) {
+			let diff = hop.angle - this[CURRENT_HOP].angle;
+			if (Math.abs(diff) < Math.PI / 4) {
+				if (diff > Math.PI / 2) { diff -= Math.PI; }
+				if (diff < -Math.PI / 2) { diff += Math.PI; }
+				adj = diff * INERTION_POWER;
+				adj_to = hop.angle - adj;
+			}
+		}
 
 		//	memorize
-		this[LAST_POINT] = tp;
+		this[CURRENT_HOP] = hop;
+		this[CURRENT_POINT] = tp;
 		const cg = this[CURRENT_GROUP];
-		cg.segments.push(hop);
+		cg.push(hop);
 
 		//	draw
-		if (cg.segments.length > 1) {
-			this._paintJoin(cg.segments[cg.segments.length - 2], hop);
+		if (cg.length > 1) {
+			this._paintJoin(cg[cg.length - 2], hop);
 		}
-		this._paintHop(hop);
+		this._paintHop(hop, adj, adj_to, d);
 
 		//	notify
 		if (this[EMPTY_STATE]) {
@@ -194,29 +196,36 @@ class SignPad extends HTMLElement {
 	_calcWeigth(ds) {
 		let fds = this[FULL_DIAG_SIZE];
 		if (!this[FULL_DIAG_SIZE]) {
-			const r = this.getBoundingClientRect();
-			fds = this[FULL_DIAG_SIZE] = Math.sqrt(Math.pow(r.width, 2) + Math.pow(r.height, 2));
+			const br = this.getBoundingClientRect();
+			fds = this[FULL_DIAG_SIZE] = Math.sqrt(Math.pow(br.width, 2) + Math.pow(br.height, 2));
 		}
 		return Math.max(2, 4 - ds / fds * 64);
 	}
 
 	_paintJoin(fh, th) {
 		const svgp = document.createElementNS(SVG_NAMESPACE, 'path');
-		svgp.setAttribute('d', `M ${roundTo(fh.tpx1)},${roundTo(fh.tpy1)} L ${roundTo(th.fpx1)},${roundTo(th.fpy1)} L ${roundTo(fh.tpx2)},${roundTo(fh.tpy2)} L ${roundTo(th.fpx2)},${roundTo(th.fpy2)} Z`);
-		this._obtainSurface().appendChild(svgp);
+		svgp.setAttribute('d', `M ${r(fh.tpx1)} ${r(fh.tpy1)} L ${r(th.fpx1)} ${r(th.fpy1)} L ${r(fh.tpx2)} ${r(fh.tpy2)} L ${r(th.fpx2)} ${r(th.fpy2)} Z`);
+		this[SURFACE].appendChild(svgp);
 	}
 
-	_paintHop(h) {
+	_paintHop(h, ad, at, d) {
 		const svgp = document.createElementNS(SVG_NAMESPACE, 'path');
-		svgp.setAttribute('d', `M ${roundTo(h.fpx1)},${roundTo(h.fpy1)} L ${roundTo(h.tpx1)},${roundTo(h.tpy1)} L ${roundTo(h.tpx2)},${roundTo(h.tpy2)} L ${roundTo(h.fpx2)},${roundTo(h.fpy2)} Z`);
-		this._obtainSurface().appendChild(svgp);
+		if (ad) {
+			const hd = (d / 2) / Math.cos(ad);
+			const dm = h.tpx1 >= h.fpx1 ? 1 : -1;
+			const dx = Math.cos(at) * hd * dm;
+			const dy = Math.sin(at) * hd * dm;
+			svgp.setAttribute('d', `M ${r(h.fpx1)} ${r(h.fpy1)} Q ${r(h.fpx1 + dx)} ${r(h.fpy1 + dy)} , ${r(h.tpx1)} ${r(h.tpy1)} L ${r(h.tpx2)} ${r(h.tpy2)} Q ${r(h.fpx2 + dx)} ${r(h.fpy2 + dy)} , ${r(h.fpx2)} ${r(h.fpy2)} Z`);
+		} else {
+			svgp.setAttribute('d', `M ${r(h.fpx1)} ${r(h.fpy1)} L ${r(h.tpx1)} ${r(h.tpy1)} L ${r(h.tpx2)} ${r(h.tpy2)} L ${r(h.fpx2)} ${r(h.fpy2)} Z`);
+		}
+		this[SURFACE].appendChild(svgp);
 	}
 
 	_exportSvg(opts) {
-		const source = this._obtainSurface();
-		const rawData = extractSvgRawData(source);
+		const rawData = extractSvgRawData(this[SURFACE]);
 		const result = document.createElementNS(SVG_NAMESPACE, 'svg');
-		for (const s of rawData.segments) {
+		for (const s of rawData.hops) {
 			result.appendChild(s);
 		}
 		const vb = opts[TRIM_KEY] ? rawData.drawRect : rawData.fullRect;
@@ -229,8 +238,7 @@ class SignPad extends HTMLElement {
 	}
 
 	_exportCanvas(opts) {
-		const source = this._obtainSurface();
-		const rawData = extractSvgRawData(source);
+		const rawData = extractSvgRawData(this[SURFACE]);
 		const result = svgToCanvas(rawData, opts[INK_KEY], opts[FILL_KEY], opts[TRIM_KEY]);
 		return result;
 	}

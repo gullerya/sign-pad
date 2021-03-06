@@ -11,13 +11,13 @@ function roundTo(input, precision = 2) {
 
 function extractSvgRawData(source) {
 	const result = {
-		segments: [],
+		hops: [],
 		fullRect: {},
 		drawRect: {}
 	};
-	for (const segment of source.children) {
-		if (segment.localName !== 'path') { continue; }
-		result.segments.push(segment.cloneNode());
+	for (const hop of source.children) {
+		if (hop.localName !== 'path') { continue; }
+		result.hops.push(hop.cloneNode());
 	}
 	const cr = source.getBoundingClientRect();
 	result.fullRect.x = 0;
@@ -40,7 +40,7 @@ function svgToCanvas(rawData, ink, fill, trim) {
 	ctx.fillStyle = fill;
 	ctx.fillRect(0, 0, rawData.fullRect.w, rawData.fullRect.h);
 	ctx.fillStyle = ink;
-	for (const s of rawData.segments) {
+	for (const s of rawData.hops) {
 		const p = new Path2D(s.getAttribute('d'));
 		ctx.fill(p);
 	}
