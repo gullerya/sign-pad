@@ -1,14 +1,13 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js';
 import { simulateDrawing } from './utils.js';
-import '/dist/sign-pad.js';
+import { LOCAL_NAME } from '/dist/sign-pad.js';
 
 const suite = getSuite({ name: 'Export E2E' });
-const ename = 'sign-pad';
 
 //	SVG
 suite.runTest({ name: 'E2E - SVG export (default options)' }, test => {
 	const expectedSVG = '<svg viewBox="0 0 400 300" fill="#000"><path d="M 101.93,74.48 L 134.29,199.74 L 132.36,200.25 L 98.06,75.51 Z"></path><path d="M 134.29,199.74 L 133.93,200.8 L 132.36,200.25 L 132.73,199.2 Z"></path><path d="M 133.93,200.8 L 300.6,75.8 L 299.39,74.2 L 132.73,199.2 Z"></path></svg>';
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -17,7 +16,7 @@ suite.runTest({ name: 'E2E - SVG export (default options)' }, test => {
 });
 
 suite.runTest({ name: 'E2E - SVG export (trim)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -29,7 +28,7 @@ suite.runTest({ name: 'E2E - SVG export (trim)' }, test => {
 });
 
 suite.runTest({ name: 'E2E - SVG export (ink)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -38,7 +37,7 @@ suite.runTest({ name: 'E2E - SVG export (ink)' }, test => {
 });
 
 suite.runTest({ name: 'E2E - SVG export (fill)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -49,7 +48,7 @@ suite.runTest({ name: 'E2E - SVG export (fill)' }, test => {
 //	canvas
 //
 suite.runTest({ name: 'E2E - canvas (png) export (default options)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -59,7 +58,7 @@ suite.runTest({ name: 'E2E - canvas (png) export (default options)' }, test => {
 });
 
 suite.runTest({ name: 'E2E - canvas (jpg) export (default options)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -69,7 +68,7 @@ suite.runTest({ name: 'E2E - canvas (jpg) export (default options)' }, test => {
 });
 
 suite.runTest({ name: 'E2E - canvas (png) export (trim)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -79,7 +78,7 @@ suite.runTest({ name: 'E2E - canvas (png) export (trim)' }, test => {
 });
 
 suite.runTest({ name: 'E2E - canvas (png) export (ink)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -100,7 +99,7 @@ suite.runTest({ name: 'E2E - canvas (png) export (ink)' }, test => {
 });
 
 suite.runTest({ name: 'E2E - canvas (png) export (fill)' }, test => {
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);
 	simulateDrawing(e);
