@@ -4,7 +4,7 @@ export {
 	obtainSurface
 }
 
-function simulateDrawing(signPad) {
+function simulateDrawing(signPad, { multitouch = false } = {}) {
 	if (!signPad) {
 		throw new Error(`signPad is invalid: ${signPad}`);
 	}
@@ -14,24 +14,59 @@ function simulateDrawing(signPad) {
 	let e;
 	e = new Event('pointerdown');
 	e.isPrimary = true;
+	e.pointerId = 1;
 	e.offsetX = w / 4;
 	e.offsetY = h / 4;
 	s.dispatchEvent(e);
 
 	e = new Event('pointermove');
 	e.isPrimary = true;
+	e.pointerId = 1;
 	e.offsetX = w / 3 * 1;
 	e.offsetY = h / 3 * 2;
 	s.dispatchEvent(e);
 
+	if (multitouch) {
+		e = new Event('pointerdown');
+		e.isPrimary = true;
+		e.pointerId = 2;
+		e.offsetX = w / 4;
+		e.offsetY = h / 4;
+		s.dispatchEvent(e);
+
+		e = new Event('pointermove');
+		e.isPrimary = true;
+		e.pointerId = 2;
+		e.offsetX = w / 3 * 1;
+		e.offsetY = h / 3 * 2;
+		s.dispatchEvent(e);
+	}
+
 	e = new Event('pointermove');
 	e.isPrimary = true;
+	e.pointerId = 1;
 	e.offsetX = w / 4 * 3;
 	e.offsetY = h / 4 * 1;
 	s.dispatchEvent(e);
 
+	if (multitouch) {
+		e = new Event('pointermove');
+		e.isPrimary = true;
+		e.pointerId = 2;
+		e.offsetX = w / 3 * 1;
+		e.offsetY = h / 3 * 2;
+		s.dispatchEvent(e);
+	}
+
 	e = new Event('pointerup');
+	e.pointerId = 1;
 	s.dispatchEvent(e);
+
+	if (multitouch) {
+		e = new Event('pointerup');
+		e.pointerId = 2;
+		s.dispatchEvent(e);
+	}
 }
 
 function simulateEscapeKey(signPad) {
