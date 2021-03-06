@@ -1,13 +1,12 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
 import { simulateDrawing, simulateEscapeKey } from './utils.js';
-import '/dist/sign-pad.js';
+import { LOCAL_NAME } from '/dist/sign-pad.js';
 
 const suite = getSuite({ name: 'API - events' });
-const ename = 'sign-pad';
 
 suite.runTest({ name: `'input' event fired when drawn` }, test => {
 	let fires = 0;
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	e.addEventListener('input', () => fires++);
 	document.body.appendChild(e);
 	simulateDrawing(e);
@@ -16,7 +15,7 @@ suite.runTest({ name: `'input' event fired when drawn` }, test => {
 
 suite.runTest({ name: `'input' event fired when clear (API)` }, test => {
 	let fires = 0;
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	simulateDrawing(e);
 	e.addEventListener('input', () => fires++);
@@ -26,7 +25,7 @@ suite.runTest({ name: `'input' event fired when clear (API)` }, test => {
 
 suite.runTest({ name: `'input' event fired when clear (Escape key)` }, test => {
 	let fires = 0;
-	const e = document.createElement(ename);
+	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	simulateDrawing(e);
 	e.addEventListener('input', () => fires++);

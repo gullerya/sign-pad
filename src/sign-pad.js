@@ -1,7 +1,11 @@
 import { roundTo, extractSvgRawData, svgToCanvas } from './sign-pad-utils.js';
 
+export {
+	LOCAL_NAME
+}
+
 const
-	HTML_TAG = new URL(import.meta.url).searchParams.get('cname') || 'sign-pad',
+	LOCAL_NAME = new URL(import.meta.url).searchParams.get('local-name') || 'sign-pad',
 	SURFACE_CLASS = 'surface',
 	SVG_NAMESPACE = 'http://www.w3.org/2000/svg',
 	DRAWING = Symbol('drawing'),
@@ -250,8 +254,9 @@ TEMPLATE.innerHTML = `
 			outline: none;
 		}
 
-		.${SURFACE_CLASS} > * {
+		.${SURFACE_CLASS} {
 			fill: currentColor;
+			touch-action: none;
 		}
 
 		[name="background"]::slotted(*) {
@@ -264,4 +269,4 @@ TEMPLATE.innerHTML = `
 	</div>
 `;
 
-customElements.define(HTML_TAG, SignPad);
+customElements.define(LOCAL_NAME, SignPad);
