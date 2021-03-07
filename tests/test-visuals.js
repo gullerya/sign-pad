@@ -10,7 +10,7 @@ suite.runTest({ name: 'surface is NOT allowing pointer-action', skip: true }, te
 	test.assertEqual('none', getComputedStyle(s).touchAction);
 });
 
-suite.runTest({ name: 'surface is NOT reacting on multi-touch', skip: true }, test => {
+suite.runTest({ name: 'surface is NOT reacting on multi-touch' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	simulateDrawing(e, { multitouch: true });
@@ -22,4 +22,5 @@ suite.runTest({ name: 'curving the segments' }, test => {
 	document.body.appendChild(e);
 	simulateCurvingDrawing(e);
 	test.assertEqual(31, obtainSurface(e).childElementCount);
+	test.assertTrue(obtainSurface(e).innerHTML.includes(' Q '));
 });

@@ -281,7 +281,7 @@ TEMPLATE.innerHTML = `
 	</style>
 	<div class="container">
 		<slot name="background"></slot>
-		<svg xmlns="http://www.w3.org/2000/svg" tabindex="0" class="${SURFACE_CLASS}"></svg>
+		<svg xmlns="http://www.w3.org/2000/svg" class="${SURFACE_CLASS}" aria-label="signature" tabindex="0"></svg>
 	</div>
 `;
 

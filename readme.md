@@ -10,6 +10,9 @@
 `sign-pad` delivers a web component, providing signature drawing surface and related services:
 - smooth drawing experience
 - customizable background
+- A11Y:
+	- `sign-pad` is focusable
+	- `Escape` clears the signature
 - convenient export API:
 	- export as **SVG** or **canvas**
 	- opt-in **trim** whitespace around the signature if needed
@@ -18,9 +21,11 @@
 	- **empty** state reflected as property and attribute (for easy state-based styling and logic)
 	- `input` event fired upon each signature drawing touch (including clear)
 
-The following picture produced by a simple example of `sign-pad` usage in [this CodePen](https://codepen.io/gullerya/pen/ZEBbGeO):
+Here is a snapshot of a simple example of `sign-pad` usage in [this CodePen](https://codepen.io/gullerya/pen/ZEBbGeO):
 
 <img src="docs/images/example.png" alt="sign-pad example" width="240px"/>
+
+> Note: `sign-pad` is only the signature drawing surface; shadows, buttons and the image reflection are parts of the demo code.
 
 # Usage example
 
@@ -28,10 +33,10 @@ Exmple below shows an essense of `sign-pad` usage: initializaion, HTML, state-ba
 
 Staring with HTML as it is a simplest and shortest part:
 ```html
-<sign-pad class="sipad"></sign-pad>
+<sign-pad class="pad"></sign-pad>
 
 <style>
-	.sipad[empty] {
+	.pad[empty] {
 		outline: 2px solid red;
 	}
 </style>
@@ -42,7 +47,7 @@ Now to the logic:
 ```js
 import 'sign-pad.min.js';
 
-const sp = document.querySelector('.sipad');
+const sp = document.querySelector('.pad');
 
 //	rest of the APIs available via the instance:
 sp.addEventListener('input', e => {});
@@ -56,10 +61,10 @@ Use regular `npm install sign-pad --save-prod` to use the component from your lo
 
 Additionally, a **CDN** deployment available (AWS driven), so one can import the component directly:
 ```js
-import 'https://libs.gullerya.com/sign-pad/1.0.0/sign-pad.min.js';
+import 'https://libs.gullerya.com/sign-pad/1.1.0/sign-pad.min.js';
 ```
 
-> Note: replace the `1.0.0` by the desired version.
+> Note: replace the `1.1.0` by the desired version.
 
 CDN features:
 - HTTPS only, no untrusted man-in-the-middle
