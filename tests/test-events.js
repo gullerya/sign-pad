@@ -10,7 +10,7 @@ suite.runTest({ name: `'input' event fired when drawn` }, test => {
 	e.addEventListener('input', () => fires++);
 	document.body.appendChild(e);
 	simulateDrawing(e);
-	test.assertEqual(3, fires);
+	test.assertEqual(2, fires);
 });
 
 suite.runTest({ name: `'input' event fired when clear (API)` }, test => {

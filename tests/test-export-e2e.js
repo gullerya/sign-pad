@@ -6,7 +6,7 @@ const suite = getSuite({ name: 'Export E2E' });
 
 //	SVG
 suite.runTest({ name: 'E2E - SVG export (default options)' }, test => {
-	const expectedSVG = '<svg viewBox="0 0 400 300" fill="#000"><path d="M 101.93,74.48 L 134.29,199.74 L 132.36,200.25 L 98.06,75.51 Z"></path><path d="M 134.29,199.74 L 133.93,200.8 L 132.36,200.25 L 132.73,199.2 Z"></path><path d="M 133.93,200.8 L 300.6,75.8 L 299.39,74.2 L 132.73,199.2 Z"></path></svg>';
+	const expectedSVG = '<svg viewBox="0 0 400 300" fill="#000"><path d="M 98.06 75.51 L 132.36 200.25 L 134.29 199.74 L 101.93 74.48 Z"></path><path d="M 132.36 200.25 L 133.93 200.8 L 134.29 199.74 L 132.73 199.2 Z"></path><path d="M 133.93 200.8 L 300.6 75.8 L 299.39 74.2 L 132.73 199.2 Z"></path></svg>';
 	const e = document.createElement(LOCAL_NAME);
 	e.style.cssText = 'width: 400px; height: 300px';
 	document.body.appendChild(e);

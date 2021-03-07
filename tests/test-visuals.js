@@ -1,5 +1,5 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
-import { simulateDrawing, obtainSurface } from './utils.js';
+import { simulateDrawing, simulateCurvingDrawing, obtainSurface } from './utils.js';
 import { LOCAL_NAME } from '/dist/sign-pad.js';
 
 const suite = getSuite({ name: 'Visuals and behaviours' });
@@ -15,4 +15,12 @@ suite.runTest({ name: 'surface is NOT reacting on multi-touch' }, test => {
 	document.body.appendChild(e);
 	simulateDrawing(e, { multitouch: true });
 	test.assertEqual(3, obtainSurface(e).childElementCount);
+});
+
+suite.runTest({ name: 'curving the segments' }, test => {
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+	simulateCurvingDrawing(e);
+	test.assertEqual(31, obtainSurface(e).childElementCount);
+	test.assertTrue(obtainSurface(e).innerHTML.includes(' Q '));
 });
