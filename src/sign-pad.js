@@ -95,9 +95,12 @@ class SignPad extends HTMLElement {
 
 	clear() {
 		this[SURFACE].innerHTML = '';
-		this[EMPTY_STATE] = true;
-		this.setAttribute(ATTRIBUTE_EMPTY, '');
-		this.dispatchEvent(new Event(INPUT_EVENT));
+		if (!this[EMPTY_STATE]) {
+			this[EMPTY_STATE] = true;
+			this[CHANGED_SINCE_ACTIVE] = true;
+			this.setAttribute(ATTRIBUTE_EMPTY, '');
+			this.dispatchEvent(new Event(INPUT_EVENT));
+		}
 	}
 
 	export(format = EXPORT_FORMATS.SVG, options) {
@@ -131,9 +134,9 @@ class SignPad extends HTMLElement {
 		this[CHANGED_SINCE_ACTIVE] = false;
 	}
 
-	_onBlur(e) {
+	_onBlur() {
 		if (this[CHANGED_SINCE_ACTIVE]) {
-			this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+			this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
 			this[CHANGED_SINCE_ACTIVE] = false;
 		}
 	}

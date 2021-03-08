@@ -35,6 +35,15 @@ suite.runTest({ name: `'input' event fired when clear (Escape key)` }, test => {
 	test.assertEqual(1, fires);
 });
 
+suite.runTest({ name: `'input' event NOT fired when clear on empty` }, test => {
+	let fires = 0;
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+	e.addEventListener('input', () => fires++);
+	e.clear();
+	test.assertEqual(0, fires);
+});
+
 //	change event
 //
 suite.runTest({ name: `'change' event fired when focus > draw > blur` }, test => {
@@ -62,7 +71,7 @@ suite.runTest({ name: `'change' event fired when (drawn) and then focus > clear 
 	test.assertEqual(1, fires);
 });
 
-suite.runTest({ name: `'change' event fired when focus > blur (no change)` }, test => {
+suite.runTest({ name: `'change' event NOT fired when (drawn) focus > blur (no change)` }, test => {
 	let fires = 0;
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
@@ -70,6 +79,19 @@ suite.runTest({ name: `'change' event fired when focus > blur (no change)` }, te
 
 	e.addEventListener('change', () => fires++);
 	simulateFocus(e);
+	simulateBlur(e);
+	test.assertEqual(0, fires);
+});
+
+
+suite.runTest({ name: `'change' event NOT fired when (empty) focus > clear > blur (no change)` }, test => {
+	let fires = 0;
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+
+	e.addEventListener('change', () => fires++);
+	simulateFocus(e);
+	e.clear();
 	simulateBlur(e);
 	test.assertEqual(0, fires);
 });
