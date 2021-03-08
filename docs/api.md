@@ -35,6 +35,7 @@ Having that, use the component directly in HTML:
 Additionally, `sign-pad` is suited for a simple CSS styling:
 - use `color` to set an ink color of the drawing pen
 - use `background` for a simple back-fill (saving the slot for a complex HTML, if/when needed)
+- use `:focus-within` to style active state
 
 Note, however, that those adjustments will have visual effect only. In order to affect the color or back-fill of the exported drawing use dedicated API, as described below.
 
@@ -64,6 +65,7 @@ Note, however, that those adjustments will have visual effect only. In order to 
 
 ## Events
 
-| Event   | Description |
-|---------|-------------|
-| `input` | fired each time the signature surface gets updated (new drawing or cleared) |
+| Event    | Description |
+|----------|-------------|
+| `input`  | fired each time the signature surface gets updated (new drawing or cleared) |
+| `change` | fired upon blur / focus loss, if the content of signature has changes since the focus gained last time |

@@ -2,14 +2,12 @@ export {
 	simulateDrawing,
 	simulateCurvingDrawing,
 	simulateEscapeKey,
+	simulateFocus,
+	simulateBlur,
 	obtainSurface
 }
 
 function simulateDrawing(signPad, { multitouch = false } = {}) {
-	if (!signPad) {
-		throw new Error(`signPad is invalid: ${signPad}`);
-	}
-
 	const s = obtainSurface(signPad);
 	const { width: w, height: h } = s.getBoundingClientRect();
 	let e;
@@ -71,10 +69,6 @@ function simulateDrawing(signPad, { multitouch = false } = {}) {
 }
 
 function simulateCurvingDrawing(signPad) {
-	if (!signPad) {
-		throw new Error(`signPad is invalid: ${signPad}`);
-	}
-
 	const s = obtainSurface(signPad);
 	const { width: w, height: h } = s.getBoundingClientRect();
 	const startPoint = [0, h / 2];
@@ -107,16 +101,28 @@ function simulateCurvingDrawing(signPad) {
 }
 
 function simulateEscapeKey(signPad) {
-	if (!signPad) {
-		throw new Error(`signPad is invalid: ${signPad}`);
-	}
-
 	const s = obtainSurface(signPad);
 	const e = new Event('keyup');
 	e.code = 'Escape';
 	s.dispatchEvent(e);
 }
 
-function obtainSurface(p) {
-	return p.shadowRoot.querySelector('svg');
+function simulateFocus(signPad) {
+	const s = obtainSurface(signPad);
+	s.focus();
+	s.dispatchEvent(new FocusEvent('focus'));
+}
+
+function simulateBlur(signPad) {
+	const s = obtainSurface(signPad);
+	s.blur();
+	s.dispatchEvent(new FocusEvent('blur'));
+}
+
+function obtainSurface(signPad) {
+	if (!signPad) {
+		throw new Error(`signPad is invalid: ${signPad}`);
+	}
+
+	return signPad.shadowRoot.querySelector('svg');
 }
