@@ -94,13 +94,14 @@ class SignPad extends HTMLElement {
 	}
 
 	clear() {
-		this[SURFACE].innerHTML = '';
-		if (!this[EMPTY_STATE]) {
-			this[EMPTY_STATE] = true;
-			this[CHANGED_SINCE_ACTIVE] = true;
-			this.setAttribute(ATTRIBUTE_EMPTY, '');
-			this.dispatchEvent(new Event(INPUT_EVENT));
+		if (this[EMPTY_STATE]) {
+			return;
 		}
+		this[SURFACE].innerHTML = '';
+		this[EMPTY_STATE] = true;
+		this[CHANGED_SINCE_ACTIVE] = true;
+		this.setAttribute(ATTRIBUTE_EMPTY, '');
+		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
 	export(format = EXPORT_FORMATS.SVG, options) {
