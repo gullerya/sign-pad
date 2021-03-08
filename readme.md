@@ -20,7 +20,7 @@
 - convenient interop API:
 	- **empty** state reflected as property and attribute (for easy state-based styling and logic)
 	- `input` event fired upon each signature drawing touch (including clear)
-	- `change` event fired when the `sign-pad` looses focus and the content has been changes since it gain it
+	- `change` event fired when the `sign-pad` looses focus if the content has been changed since it gained it
 
 Here is a snapshot of a simple example of `sign-pad` usage in [this CodePen](https://codepen.io/gullerya/pen/ZEBbGeO):
 
