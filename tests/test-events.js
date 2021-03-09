@@ -1,5 +1,5 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
-import { simulateDrawing, simulateEscapeKey, simulateFocus, simulateBlur } from './utils.js';
+import { simulateDrawing, simulateEscapeKey, simulateEnterKey, simulateFocus, simulateBlur } from './utils.js';
 import { LOCAL_NAME } from '/dist/sign-pad.js';
 
 const suite = getSuite({ name: 'API - events' });
@@ -83,7 +83,6 @@ suite.runTest({ name: `'change' event NOT fired when (drawn) focus > blur (no ch
 	test.assertEqual(0, fires);
 });
 
-
 suite.runTest({ name: `'change' event NOT fired when (empty) focus > clear > blur (no change)` }, test => {
 	let fires = 0;
 	const e = document.createElement(LOCAL_NAME);
@@ -93,5 +92,28 @@ suite.runTest({ name: `'change' event NOT fired when (empty) focus > clear > blu
 	simulateFocus(e);
 	e.clear();
 	simulateBlur(e);
+	test.assertEqual(0, fires);
+});
+
+suite.runTest({ name: `'change' event fired on 'Enter' when content changed` }, test => {
+	let fires = 0;
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+
+	e.addEventListener('change', () => fires++);
+	simulateFocus(e);
+	simulateDrawing(e);
+	simulateEnterKey(e);
+	test.assertEqual(1, fires);
+});
+
+suite.runTest({ name: `'change' event NOT fired on 'Enter' when content not changed` }, test => {
+	let fires = 0;
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+
+	e.addEventListener('change', () => fires++);
+	simulateFocus(e);
+	simulateEnterKey(e);
 	test.assertEqual(0, fires);
 });
