@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [1.2.1] - 2021-03-09
+### Added
 - [Issue #12](https://github.com/gullerya/sign-pad/issues/12) - add support for an `Enter` key (committing the value change if any, technically focusing out, so that is any change - `change` event fired)
 
 ## [1.2.0] - 2021-03-09
