@@ -15,8 +15,10 @@ const
 	CURRENT_POINT = Symbol('current-point'),
 	CURRENT_HOP = Symbol('current-hop'),
 	FULL_DIAG_SIZE = Symbol('full-diag-size'),
+	CHANGED_SINCE_ACTIVE = Symbol('changed-since-active'),
 	INERTION_POWER = 0.4,
 	INPUT_EVENT = 'input',
+	CHANGE_EVENT = 'change',
 	ATTRIBUTE_EMPTY = 'empty',
 	TRIM_KEY = 'trim',
 	INK_KEY = 'ink',
@@ -77,7 +79,8 @@ class SignPad extends HTMLElement {
 			[CURRENT_GROUP]: { value: null, writable: true },
 			[CURRENT_POINT]: { value: null, writable: true },
 			[CURRENT_HOP]: { value: null, writable: true },
-			[FULL_DIAG_SIZE]: { value: null, writable: true }
+			[FULL_DIAG_SIZE]: { value: null, writable: true },
+			[CHANGED_SINCE_ACTIVE]: { value: false, writable: true }
 		});
 		this._setupListeners();
 	}
@@ -91,8 +94,12 @@ class SignPad extends HTMLElement {
 	}
 
 	clear() {
+		if (this[EMPTY_STATE]) {
+			return;
+		}
 		this[SURFACE].innerHTML = '';
 		this[EMPTY_STATE] = true;
+		this[CHANGED_SINCE_ACTIVE] = true;
 		this.setAttribute(ATTRIBUTE_EMPTY, '');
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
@@ -112,6 +119,9 @@ class SignPad extends HTMLElement {
 
 	_setupListeners() {
 		const s = this[SURFACE];
+		s.addEventListener('focus', e => this._onFocus(e));
+		s.addEventListener('blur', e => this._onBlur(e));
+
 		s.addEventListener('pointerdown', e => this._drawStart(e));
 		s.addEventListener('pointermove', e => this._drawMove(e));
 		s.addEventListener('pointerup', e => this._drawEnd(e));
@@ -119,6 +129,17 @@ class SignPad extends HTMLElement {
 		s.addEventListener('pointercancel', e => this._drawEnd(e));
 
 		s.addEventListener('keyup', e => this._keyProc(e));
+	}
+
+	_onFocus() {
+		this[CHANGED_SINCE_ACTIVE] = false;
+	}
+
+	_onBlur() {
+		if (this[CHANGED_SINCE_ACTIVE]) {
+			this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
+			this[CHANGED_SINCE_ACTIVE] = false;
+		}
 	}
 
 	_drawStart(e) {
@@ -181,7 +202,8 @@ class SignPad extends HTMLElement {
 		}
 		this._paintHop(hop, adj, adj_to, d);
 
-		//	notify
+		//	manage state & notify
+		this[CHANGED_SINCE_ACTIVE] = true;
 		if (this[EMPTY_STATE]) {
 			this[EMPTY_STATE] = false;
 			this.removeAttribute(ATTRIBUTE_EMPTY);

@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.2.0] - 2021-03-09
+### Added
+- [Issue #7](https://github.com/gullerya/sign-pad/issues/7) - implemented `change` event
+
+## [1.1.0] - 2021-03-06
+### Fixed
+- [Issue #5](https://github.com/gullerya/sign-pad/issues/5) - create smooth lines via Bezier curves rather than flat lines
+
 ## [1.0.1] - 2021-03-06
 ### Fixed
 - [Issue #1](https://github.com/gullerya/sign-pad/issues/1) - disabling `touch-action` to support touch surfaces better
