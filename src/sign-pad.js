@@ -162,8 +162,13 @@ class SignPad extends HTMLElement {
 	}
 
 	_keyProc(e) {
-		if (e.code === 'Escape') {
-			this.clear();
+		switch (e.code) {
+			case 'Escape':
+				this.clear();
+				break;
+			case 'Enter':
+				this.blur();
+				break;
 		}
 	}
 

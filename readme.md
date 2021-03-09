@@ -12,6 +12,7 @@
 - customizable background
 - A11Y:
 	- `sign-pad` is focusable
+	- `Enter` 'commits' the change, if any (focusing out and firing `change` event if changed)
 	- `Escape` clears the signature
 - convenient export API:
 	- export as **SVG** or **canvas**
