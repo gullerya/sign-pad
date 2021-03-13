@@ -7,7 +7,7 @@
 
 # Summary
 
-`sign-pad` web component provides signature drawing surface and related services:
+`sign-pad` web component provides signature drawing surface and related services, featured by:
 - smooth drawing experience
 - customizable background
 - A11Y:
