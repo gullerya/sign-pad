@@ -85,4 +85,4 @@ Full changelog found [here](docs/changelog.md).
 
 # Security
 
-Security policy is describe [here](https://github.com/gullerya/sign-pad/blob/main/security.md). If/when any concern raised, please follow the process.
+Security policy described [here](docs/security.md). If/when any concern raised, please follow the process.
