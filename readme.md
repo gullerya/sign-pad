@@ -7,13 +7,13 @@
 
 # Summary
 
-`sign-pad` delivers a web component, providing signature drawing surface and related services:
+`sign-pad` web component provides signature drawing surface and related services:
 - smooth drawing experience
 - customizable background
 - A11Y:
 	- `sign-pad` is focusable
-	- `Enter` 'commits' the change, if any (focusing out and firing `change` event if changed)
-	- `Escape` clears the signature
+	- `Enter` key 'commits' the change, if any (focusing out and firing `change` event if changed)
+	- `Escape` key clears the signature
 - convenient export API:
 	- export as **SVG** or **canvas**
 	- opt-in **trim** whitespace around the signature if needed
@@ -27,13 +27,13 @@ Here is a snapshot of a simple example of `sign-pad` usage in [this CodePen](htt
 
 <img src="docs/images/example.png" alt="sign-pad example" width="240px"/>
 
-> Note: `sign-pad` is only the signature drawing surface; shadows, buttons and the image reflection are parts of the demo code.
+> Note: in the example above `sign-pad` is only the signature drawing surface; shadows, buttons and the image reflection are parts of the demo code.
 
 # Usage example
 
-Exmple below shows an essense of `sign-pad` usage: initializaion, HTML, state-based styling and JS logic.
+Example below shows an essense of `sign-pad` usage: initializaion, HTML, state-based styling and JS logic.
 
-Staring with HTML as it is a simplest and shortest part:
+Staring with HTML/CSS:
 ```html
 <sign-pad class="pad"></sign-pad>
 
@@ -49,12 +49,14 @@ Now to the logic:
 ```js
 import 'sign-pad.min.js';
 
-const sp = document.querySelector('.pad');
+const pad = document.querySelector('.pad');
 
-//	rest of the APIs available via the instance:
-sp.addEventListener('input', e => {});
+//	rest of the APIs are available via the instance:
+pad.addEventListener('input', e => {});
 
-const asSvg = sp.export('svg', { trim: true, ink: 'blue' });
+const asSvg = pad.export('svg', { trim: true, ink: 'blue' });
+const asJpg = pad.export('jpg', { ink: 'white', fill: 'black' });
+const asPng = pad.export('png');
 ```
 
 # Install
@@ -63,10 +65,10 @@ Use regular `npm install sign-pad --save-prod` to use the component from your lo
 
 Additionally, a **CDN** deployment available (AWS driven), so one can import the component directly:
 ```js
-import 'https://libs.gullerya.com/sign-pad/1.1.0/sign-pad.min.js';
+import 'https://libs.gullerya.com/sign-pad/x.y.z/sign-pad.min.js';
 ```
 
-> Note: replace the `1.1.0` by the desired version.
+> Note: replace the `x.y.z` by the desired version.
 
 CDN features:
 - HTTPS only, no untrusted man-in-the-middle
