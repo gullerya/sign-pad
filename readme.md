@@ -68,7 +68,7 @@ Additionally, a **CDN** deployment available (AWS driven), so one can import the
 import 'https://libs.gullerya.com/sign-pad/x.y.z/sign-pad.min.js';
 ```
 
-> Note: replace the `x.y.z` by the desired version.
+> Note: replace the `x.y.z` by the desired version, one of the listed in the [changelog](docs/changelog.md).
 
 CDN features:
 - HTTPS only, no untrusted man-in-the-middle
