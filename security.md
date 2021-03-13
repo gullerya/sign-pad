@@ -2,12 +2,9 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.2.x   | :white_check_mark: |
-| < 1.2.x | :x:                |
+**Latest 2 major** versions are supported and will have a security issues resolved as their minor fixes.
 
 ## Reporting a Vulnerability
 
 Security vulnerability should be reported via the [issues](https://github.com/gullerya/sign-pad/issues).
-Please tag the security issue as critical one.
+When adding security issue, please tag it as a critical one.
