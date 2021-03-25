@@ -8,14 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - [Issue #15](https://github.com/gullerya/sign-pad/issues/15) - use capture feature to allow continuous drawing even if the ponter has occasionally gone out of surface
+### Changed
+- [Issue #14](https://github.com/gullerya/sign-pad/issues/14) - fixed the `readme` documentation and added export examples
 
 ## [1.2.3] - 2021-03-13
 ### Changed
-- documentation improved and security process added.
+- documentation improved and security process added
 
 ## [1.2.2] - 2021-03-13
 ### Changed
-- documentation improved and security process added.
+- documentation improved and security process added
 
 ## [1.2.1] - 2021-03-09
 ### Added
