@@ -149,6 +149,7 @@ class SignPad extends HTMLElement {
 			return;
 		}
 
+		e.target.setPointerCapture(pid);
 		this[ACTIVE_POINTER] = pid;
 		this[CURRENT_GROUP] = [];
 		this[CURRENT_POINT] = { x: e.offsetX, y: e.offsetY, w: 4 };
@@ -157,6 +158,7 @@ class SignPad extends HTMLElement {
 
 	_drawEnd(e) {
 		if (e.pointerId === this[ACTIVE_POINTER]) {
+			e.target.releasePointerCapture(this[ACTIVE_POINTER]);
 			this[ACTIVE_POINTER] = null;
 		}
 	}

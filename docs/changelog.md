@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- [Issue #15](https://github.com/gullerya/sign-pad/issues/15) - use capture feature to allow continuous drawing even if the ponter has occasionally gone out of surface
 ### Changed
 - [Issue #14](https://github.com/gullerya/sign-pad/issues/14) - fixed the `readme` documentation and added export examples
 
