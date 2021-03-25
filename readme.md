@@ -5,10 +5,10 @@
 [![Codecov](https://img.shields.io/codecov/c/github/gullerya/sign-pad/main.svg)](https://codecov.io/gh/gullerya/sign-pad/branch/main)
 [![Codacy](https://img.shields.io/codacy/grade/375f658061bf4150b8a9125b5fe460ae.svg?logo=codacy)](https://app.codacy.com/gh/gullerya/sign-pad/dashboard)
 
-# Summary
+# `sign-pad`
 
 `sign-pad` web component provides signature drawing surface and related services, featured by:
-- smooth drawing experience
+- smooth & solid drawing experience
 - customizable background
 - A11Y:
 	- `sign-pad` is focusable
@@ -29,7 +29,7 @@ Here is a snapshot of a simple example of `sign-pad` usage in [this CodePen](htt
 
 > Note: in the example above `sign-pad` is only the signature drawing surface; shadows, buttons and the image reflection are parts of the demo code.
 
-# Usage example
+## Usage example
 
 Example below shows an essense of `sign-pad` usage: initializaion, HTML, state-based styling and JS logic.
 
@@ -55,11 +55,10 @@ const pad = document.querySelector('.pad');
 pad.addEventListener('input', e => {});
 
 const asSvg = pad.export('svg', { trim: true, ink: 'blue' });
-const asJpg = pad.export('jpg', { ink: 'white', fill: 'black' });
-const asPng = pad.export('png');
+const asJpg = pad.export('canvas', { ink: 'white', fill: 'black' });
 ```
 
-# Install
+## Install
 
 Use regular `npm install sign-pad --save-prod` to use the component from your local environment.
 
@@ -75,14 +74,49 @@ CDN features:
 - highly available (with many geo spread edges)
 - agressive caching setup
 
-# API
+## API
 
 Full API documentation found [here](docs/api.md).
 
-# Changelog
+## Changelog
 
 Full changelog found [here](docs/changelog.md).
 
-# Security
+## Security
 
-Security policy is describe [here](https://github.com/gullerya/sign-pad/blob/main/security.md). If/when any concern raised, please follow the process.
+Security policy described [here](https://github.com/gullerya/sign-pad/blob/main/docs/security.md). If/when any concern raised, please follow the process.
+
+## Export to image examples
+
+It is easy to export the signature as PNG / JPEG / WEBP, utilizing the `canvas` and [`toDataURL`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL) / [`toBlob`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob) APIs (see linked documentation for more info).
+
+### PNG example
+
+In this example we'll use `toBlob` API.
+The accepted `blob` can further be sent to the server for storage or otherwise.
+
+```js
+const signPad = document.querySelector('sign-pad');
+const canvas = signPad.export('canvas', { trim: true, ink: '#00f' });
+canvas.toBlob(blob => {
+	//	'blob' holds the binary data of
+	//	signature image in PNG format
+}, 'image/png');
+```
+
+> Note: in this example we trimmed the empty space around the signature and left the background transparent.
+
+### JPEG example
+
+In this example we'll use `toDataURL` API.
+The accepted `dataURL` string can further be sent to the server for storage or otherwise.
+
+```js
+const signPad = document.querySelector('sign-pad');
+const canvas = signPad.export('canvas', { fill: '#fff' });
+const dataURL = canvas.toDataURL('image/jpeg', 1.0);
+//	'dataURL' holds the dataURL data of
+//	signature image in JPEG format
+```
+
+> Note: when targeting JPEG, you should set the `fill`, otherwise the JPEG will get default black background since it has no transparency suppot.
