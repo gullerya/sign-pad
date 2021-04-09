@@ -34,7 +34,7 @@ See also:
 
 ## Usage example
 
-Example below shows an essense of `sign-pad` usage: initializaion, HTML, state-based styling and JS logic.
+Example below shows an essence of `sign-pad` usage: initializaion, HTML, state-based styling and JS logic.
 
 Staring with HTML/CSS:
 ```html
