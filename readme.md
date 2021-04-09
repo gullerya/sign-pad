@@ -23,14 +23,14 @@
 	- `input` event fired upon each signature drawing touch (including clear)
 	- `change` event fired when the `sign-pad` looses focus if the content has been changed since it gained it
 
-Here is a snapshot of a simple example of `sign-pad` usage in [this CodePen (vanillay JS)](https://codepen.io/gullerya/pen/ZEBbGeO):
+Here is a snapshot of a simple example of `sign-pad` usage in [Vanilla JS CodePen](https://codepen.io/gullerya/pen/ZEBbGeO):
 
 <img src="docs/images/example.png" alt="sign-pad example" width="240px"/>
 
 > Note: in the example above `sign-pad` is only the signature drawing surface; shadows, buttons and the image reflection are parts of the demo code.
 
 See also:
-- [VueJS example CodePen](https://codepen.io/gullerya/pen/xxgPLRG)
+- [VueJS CodePen example](https://codepen.io/gullerya/pen/xxgPLRG)
 
 ## Usage example
 
