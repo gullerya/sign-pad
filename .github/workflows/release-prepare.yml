@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - release
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (leave empty for auto-bump)'     
+        required: false
 
 jobs:
   prepare-verify:
@@ -28,7 +33,7 @@ jobs:
 
       - name: Bump release version
         run: |
-          npm run bump -- --release
+          npm run bump -- --version=${{ github.event.inputs.version || 'minor' }} --release
           echo "RELEASE_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
 
       # Build & Verify new version

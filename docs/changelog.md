@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2021-04-09
+### Added
+- [Issue #18](https://github.com/gullerya/sign-pad/issues/18) - added VueJS CodePen example to the readme
+- [Issue #19](https://github.com/gullerya/sign-pad/issues/19) - added manual release trigger
+
 ## [1.3.0] - 2021-03-25
 ### Added
 - [Issue #15](https://github.com/gullerya/sign-pad/issues/15) - use capture feature to allow continuous drawing even if the ponter has occasionally gone out of surface
