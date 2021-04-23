@@ -27,7 +27,7 @@ jobs:
 
       - name: Bump to target version, if any
         if: ${{ github.event.inputs.version }}
-        run: npm run bump -- --version ${{ github.event.inputs.version }}
+        run: npm run bump -- --version=${{ github.event.inputs.version }}
 
       - name: Bump release version
         run: |
