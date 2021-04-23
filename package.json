@@ -1,6 +1,6 @@
 {
 	"name": "sign-pad",
-	"version": "1.3.2",
+	"version": "1.3.3-snapshot",
 	"description": "sign-pad web component provides a signature drawing surface and related services",
 	"keywords": [
 		"sign",
