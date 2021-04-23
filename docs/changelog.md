@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2021-04-23
+### Added
+- added manual version select to the manual release flow
+### Changed
+- updated dependencies
+
 ## [1.3.1] - 2021-04-09
 ### Added
 - [Issue #18](https://github.com/gullerya/sign-pad/issues/18) - added VueJS CodePen example to the readme
