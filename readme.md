@@ -30,6 +30,7 @@ Here is a snapshot of a simple example of `sign-pad` usage in [Vanilla JS CodePe
 > Note: in the example above `sign-pad` is only the signature drawing surface; shadows, buttons and the image reflection are parts of the demo code.
 
 See also:
+- [DataTier CodePen example](https://codepen.io/gullerya/pen/KKaJdEv)
 - [VueJS CodePen example](https://codepen.io/gullerya/pen/xxgPLRG)
 
 ## Usage example
