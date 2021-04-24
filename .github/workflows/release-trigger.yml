@@ -8,7 +8,7 @@ on:
         required: false
 
 jobs:
-  trigger_release:
+  prepare-verify-trigger:
     runs-on: ubuntu-latest
 
     steps:
