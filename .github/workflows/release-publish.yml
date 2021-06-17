@@ -1,4 +1,4 @@
-name: Release 'sign-pad'
+name: Release
 
 on:
   push:
