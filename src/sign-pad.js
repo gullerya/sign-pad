@@ -34,6 +34,8 @@ const
 const TEMPLATE = document.createElement('template');
 
 class SignPad extends HTMLElement {
+	static formAssociated = true;
+
 	#surface;
 	#changedSinceActive = false;
 	#activePointer = null;
@@ -58,6 +60,10 @@ class SignPad extends HTMLElement {
 
 	get isEmpty() {
 		return !this.#surface.innerHTML.length;
+	}
+
+	get form() {
+		return this.#internals.form;
 	}
 
 	clear() {
