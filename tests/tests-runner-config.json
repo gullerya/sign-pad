@@ -5,7 +5,7 @@
 	},
 	"coverage": {
 		"include": [
-			"^\/dist\/.+"
+			"^\/src\/.+"
 		],
 		"exclude": [
 			".+\\.min\\.js$"

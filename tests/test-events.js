@@ -1,6 +1,6 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
 import { simulateDrawing, simulateEscapeKey, simulateEnterKey, simulateFocus, simulateBlur } from './utils.js';
-import { LOCAL_NAME } from '/dist/sign-pad.js';
+import { LOCAL_NAME } from '/src/sign-pad.js';
 
 const suite = getSuite({ name: 'API - events' });
 

@@ -1,7 +1,7 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
 import { simulateDrawing, simulateEscapeKey, obtainSurface } from './utils.js';
-import { LOCAL_NAME as DEFAULT_LOCAL_NAME } from '/dist/sign-pad.js';
-import { LOCAL_NAME } from '/dist/sign-pad.js?local-name=sign-pad-x';
+import { LOCAL_NAME as DEFAULT_LOCAL_NAME } from '/src/sign-pad.js';
+import { LOCAL_NAME } from '/src/sign-pad.js?local-name=sign-pad-x';
 
 const suite = getSuite({ name: 'API - base, attributes, properties, methods' });
 
