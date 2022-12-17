@@ -69,6 +69,8 @@ class Hop {
 }
 
 class SignPad extends HTMLElement {
+	#internals;
+
 	constructor() {
 		super();
 		this.attachShadow({ mode: 'open' }).appendChild(TEMPLATE.content.cloneNode(true));
@@ -82,7 +84,8 @@ class SignPad extends HTMLElement {
 			[FULL_DIAG_SIZE]: { value: null, writable: true },
 			[CHANGED_SINCE_ACTIVE]: { value: false, writable: true }
 		});
-		this._setupListeners();
+		this.#setupListeners();
+		this.#internals = this.attachInternals();
 	}
 
 	connectedCallback() {
@@ -111,38 +114,38 @@ class SignPad extends HTMLElement {
 		const eo = Object.assign({}, EXPORT_FORMATS[format].defaultOptions, options);
 		switch (format) {
 			case 'svg':
-				return this._exportSvg(eo);
+				return this.#exportSvg(eo);
 			case 'canvas':
-				return this._exportCanvas(eo);
+				return this.#exportCanvas(eo);
 		}
 	}
 
-	_setupListeners() {
+	#setupListeners() {
 		const s = this[SURFACE];
-		s.addEventListener('focus', e => this._onFocus(e));
-		s.addEventListener('blur', e => this._onBlur(e));
+		s.addEventListener('focus', e => this.#onFocus(e));
+		s.addEventListener('blur', e => this.#onBlur(e));
 
-		s.addEventListener('pointerdown', e => this._drawStart(e));
-		s.addEventListener('pointermove', e => this._drawMove(e));
-		s.addEventListener('pointerup', e => this._drawEnd(e));
-		s.addEventListener('pointerleave', e => this._drawEnd(e));
-		s.addEventListener('pointercancel', e => this._drawEnd(e));
+		s.addEventListener('pointerdown', e => this.#drawStart(e));
+		s.addEventListener('pointermove', e => this.#drawMove(e));
+		s.addEventListener('pointerup', e => this.#drawEnd(e));
+		s.addEventListener('pointerleave', e => this.#drawEnd(e));
+		s.addEventListener('pointercancel', e => this.#drawEnd(e));
 
-		s.addEventListener('keyup', e => this._keyProc(e));
+		s.addEventListener('keyup', e => this.#keyProc(e));
 	}
 
-	_onFocus() {
+	#onFocus() {
 		this[CHANGED_SINCE_ACTIVE] = false;
 	}
 
-	_onBlur() {
+	#onBlur() {
 		if (this[CHANGED_SINCE_ACTIVE]) {
 			this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
 			this[CHANGED_SINCE_ACTIVE] = false;
 		}
 	}
 
-	_drawStart(e) {
+	#drawStart(e) {
 		if (!e.isPrimary) { return; }
 		const pid = e.pointerId;
 		if (this[ACTIVE_POINTER] && pid !== this[ACTIVE_POINTER]) {
@@ -156,14 +159,14 @@ class SignPad extends HTMLElement {
 		this[CURRENT_HOP] = null;
 	}
 
-	_drawEnd(e) {
+	#drawEnd(e) {
 		if (e.pointerId === this[ACTIVE_POINTER]) {
 			e.target.releasePointerCapture(this[ACTIVE_POINTER]);
 			this[ACTIVE_POINTER] = null;
 		}
 	}
 
-	_keyProc(e) {
+	#keyProc(e) {
 		switch (e.code) {
 			case 'Escape':
 				this.clear();
@@ -174,16 +177,16 @@ class SignPad extends HTMLElement {
 		}
 	}
 
-	_drawMove(e) {
+	#drawMove(e) {
 		if (e.pointerId !== this[ACTIVE_POINTER]) { return; }
 
 		const tp = { x: e.offsetX, y: e.offsetY };
 		const fp = this[CURRENT_POINT];
 
 		//	calcs
-		const d = this._calcDistance(fp, tp);
+		const d = this.#calcDistance(fp, tp);
 		if (d < 4) { return; }
-		tp.w = this._calcWeigth(d);
+		tp.w = this.#calcWeigth(d);
 		const hop = new Hop(fp, tp);
 		let adj = null;
 		let adj_to = null;
@@ -205,9 +208,9 @@ class SignPad extends HTMLElement {
 
 		//	draw
 		if (cg.length > 1) {
-			this._paintJoin(cg[cg.length - 2], hop);
+			this.#paintJoin(cg[cg.length - 2], hop);
 		}
-		this._paintHop(hop, adj, adj_to, d);
+		this.#paintHop(hop, adj, adj_to, d);
 
 		//	manage state & notify
 		this[CHANGED_SINCE_ACTIVE] = true;
@@ -218,11 +221,11 @@ class SignPad extends HTMLElement {
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
-	_calcDistance(fp, tp) {
+	#calcDistance(fp, tp) {
 		return Math.sqrt(Math.pow(tp.x - fp.x, 2) + Math.pow(tp.y - fp.y, 2));
 	}
 
-	_calcWeigth(ds) {
+	#calcWeigth(ds) {
 		let fds = this[FULL_DIAG_SIZE];
 		if (!this[FULL_DIAG_SIZE]) {
 			const br = this.getBoundingClientRect();
@@ -231,13 +234,13 @@ class SignPad extends HTMLElement {
 		return Math.max(2, 4 - ds / fds * 64);
 	}
 
-	_paintJoin(fh, th) {
+	#paintJoin(fh, th) {
 		const svgp = document.createElementNS(SVG_NAMESPACE, 'path');
 		svgp.setAttribute('d', `M ${r(fh.tpx1)} ${r(fh.tpy1)} L ${r(th.fpx1)} ${r(th.fpy1)} L ${r(fh.tpx2)} ${r(fh.tpy2)} L ${r(th.fpx2)} ${r(th.fpy2)} Z`);
 		this[SURFACE].appendChild(svgp);
 	}
 
-	_paintHop(h, ad, at, d) {
+	#paintHop(h, ad, at, d) {
 		const svgp = document.createElementNS(SVG_NAMESPACE, 'path');
 		if (ad) {
 			const hd = (d / 2) / Math.cos(ad);
@@ -251,7 +254,7 @@ class SignPad extends HTMLElement {
 		this[SURFACE].appendChild(svgp);
 	}
 
-	_exportSvg(opts) {
+	#exportSvg(opts) {
 		const rawData = extractSvgRawData(this[SURFACE]);
 		const result = document.createElementNS(SVG_NAMESPACE, 'svg');
 		for (const s of rawData.hops) {
@@ -266,7 +269,7 @@ class SignPad extends HTMLElement {
 		return result;
 	}
 
-	_exportCanvas(opts) {
+	#exportCanvas(opts) {
 		const rawData = extractSvgRawData(this[SURFACE]);
 		const result = svgToCanvas(rawData, opts[INK_KEY], opts[FILL_KEY], opts[TRIM_KEY]);
 		return result;
