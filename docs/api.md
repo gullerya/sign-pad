@@ -28,9 +28,9 @@ Having that, use the component directly in HTML:
 
 ## Attributes/Properties
 
-| Attribute | Property  | Type      | Description |
-|-----------|-----------|-----------|-------------|
-| `empty`   | `empty`   | `boolean` | `true` (attribute present) when the signature surface is empty, otherwise `false` (attribute absent) |
+| Attribute | Property    | Type      | Description |
+|-----------|-------------|-----------|-------------|
+| `empty`   | `isEmpty`   | `boolean` | `true` (attribute present) when the signature surface is empty, otherwise `false` (attribute absent) |
 
 Additionally, `sign-pad` is suited for a simple CSS styling:
 - use `color` to set an ink color of the drawing pen

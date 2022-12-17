@@ -45,7 +45,7 @@ suite.runTest({ name: 'empty state true (present) when created' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	obtainSurface(e);
-	test.assertTrue(e.isEmpty);
+	test.assertTrue(e.empty);
 	test.assertTrue(e.hasAttribute('empty'));
 });
 
@@ -53,7 +53,7 @@ suite.runTest({ name: 'empty state false (absent) when drawn' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	simulateDrawing(e);
-	test.assertFalse(e.isEmpty);
+	test.assertFalse(e.empty);
 	test.assertFalse(e.hasAttribute('empty'));
 });
 
@@ -61,7 +61,7 @@ suite.runTest({ name: 'empty state true (present) when clear' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	simulateDrawing(e);
-	test.assertFalse(e.isEmpty);
+	test.assertFalse(e.empty);
 	test.assertFalse(e.hasAttribute('empty'));
 });
 

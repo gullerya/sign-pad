@@ -1,7 +1,46 @@
 export {
+	Hop,
+	calcDistance,
 	roundTo,
 	extractSvgRawData,
 	svgToCanvas
+}
+
+class Hop {
+	constructor(fp, tp) {
+		const dx = tp.x - fp.x;
+		const dy = tp.y - fp.y;
+		this.angle = Math.atan(dy / dx);
+		const diffs = this.#calcRect(this.angle, fp.w, tp.w);
+
+		//	from points
+		this.fpx1 = fp.x + diffs.fdx;
+		this.fpy1 = fp.y + diffs.fdy;
+		this.fpx2 = fp.x - diffs.fdx;
+		this.fpy2 = fp.y - diffs.fdy;
+
+		//	to points
+		this.tpx1 = tp.x + diffs.tdx;
+		this.tpy1 = tp.y + diffs.tdy;
+		this.tpx2 = tp.x - diffs.tdx;
+		this.tpy2 = tp.y - diffs.tdy;
+	}
+
+	#calcRect(angle, fs, ts) {
+		const orthogAngle = angle + Math.PI / 2;
+		const c = Math.cos(orthogAngle);
+		const s = Math.sin(orthogAngle);
+		return {
+			fdx: c * fs / 2,
+			fdy: s * fs / 2,
+			tdx: c * ts / 2,
+			tdy: s * ts / 2
+		};
+	}
+}
+
+function calcDistance(x1, y1, x2, y2) {
+	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
 function roundTo(input, precision = 2) {

@@ -1,4 +1,10 @@
-import { roundTo as r, extractSvgRawData, svgToCanvas } from './sign-pad-utils.js';
+import {
+	Hop,
+	calcDistance,
+	roundTo as r,
+	extractSvgRawData,
+	svgToCanvas
+} from './sign-pad-utils.js';
 
 export {
 	LOCAL_NAME
@@ -8,14 +14,6 @@ const
 	LOCAL_NAME = new URL(import.meta.url).searchParams.get('local-name') || 'sign-pad',
 	SURFACE_CLASS = 'surface',
 	SVG_NAMESPACE = 'http://www.w3.org/2000/svg',
-	SURFACE = Symbol('surface'),
-	ACTIVE_POINTER = Symbol('active-pointer'),
-	EMPTY_STATE = Symbol('empty-state'),
-	CURRENT_GROUP = Symbol('current-group'),
-	CURRENT_POINT = Symbol('current-point'),
-	CURRENT_HOP = Symbol('current-hop'),
-	FULL_DIAG_SIZE = Symbol('full-diag-size'),
-	CHANGED_SINCE_ACTIVE = Symbol('changed-since-active'),
 	INERTION_POWER = 0.4,
 	INPUT_EVENT = 'input',
 	CHANGE_EVENT = 'change',
@@ -35,74 +33,37 @@ const
 
 const TEMPLATE = document.createElement('template');
 
-class Hop {
-	constructor(fp, tp) {
-		const dx = tp.x - fp.x;
-		const dy = tp.y - fp.y;
-		this.angle = Math.atan(dy / dx);
-		const diffs = this._calcRect(this.angle, fp.w, tp.w);
-
-		//	from points
-		this.fpx1 = fp.x + diffs.fdx;
-		this.fpy1 = fp.y + diffs.fdy;
-		this.fpx2 = fp.x - diffs.fdx;
-		this.fpy2 = fp.y - diffs.fdy;
-
-		//	to points
-		this.tpx1 = tp.x + diffs.tdx;
-		this.tpy1 = tp.y + diffs.tdy;
-		this.tpx2 = tp.x - diffs.tdx;
-		this.tpy2 = tp.y - diffs.tdy;
-	}
-
-	_calcRect(angle, fs, ts) {
-		const orthogAngle = angle + Math.PI / 2;
-		const c = Math.cos(orthogAngle);
-		const s = Math.sin(orthogAngle);
-		return {
-			fdx: c * fs / 2,
-			fdy: s * fs / 2,
-			tdx: c * ts / 2,
-			tdy: s * ts / 2
-		};
-	}
-}
-
 class SignPad extends HTMLElement {
+	#surface;
+	#changedSinceActive = false;
+	#activePointer = null;
+	#currentGroup = null;
+	#currentPoint = null;
+	#currentHop = null;
+	#fullDiagSize = null;
 	#internals;
 
 	constructor() {
 		super();
-		this.attachShadow({ mode: 'open' }).appendChild(TEMPLATE.content.cloneNode(true));
-		Object.defineProperties(this, {
-			[SURFACE]: { value: this.shadowRoot.querySelector(`.${SURFACE_CLASS}`) },
-			[ACTIVE_POINTER]: { value: null, writable: true },
-			[EMPTY_STATE]: { value: true, writable: true },
-			[CURRENT_GROUP]: { value: null, writable: true },
-			[CURRENT_POINT]: { value: null, writable: true },
-			[CURRENT_HOP]: { value: null, writable: true },
-			[FULL_DIAG_SIZE]: { value: null, writable: true },
-			[CHANGED_SINCE_ACTIVE]: { value: false, writable: true }
-		});
-		this.#setupListeners();
+		const shadowRoot = this.attachShadow({ mode: 'open' });
+		shadowRoot.appendChild(TEMPLATE.content.cloneNode(true));
+		this.#surface = shadowRoot.querySelector(`.${SURFACE_CLASS}`);
 		this.#internals = this.attachInternals();
+		this.#setupListeners();
 	}
 
 	connectedCallback() {
 		this.setAttribute(ATTRIBUTE_EMPTY, '');
 	}
 
-	get empty() {
-		return this[EMPTY_STATE];
+	get isEmpty() {
+		return !this.#surface.innerHTML.length;
 	}
 
 	clear() {
-		if (this[EMPTY_STATE]) {
-			return;
-		}
-		this[SURFACE].innerHTML = '';
-		this[EMPTY_STATE] = true;
-		this[CHANGED_SINCE_ACTIVE] = true;
+		if (this.isEmpty) { return; }
+		this.#surface.innerHTML = '';
+		this.#changedSinceActive = true;
 		this.setAttribute(ATTRIBUTE_EMPTY, '');
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
@@ -121,7 +82,7 @@ class SignPad extends HTMLElement {
 	}
 
 	#setupListeners() {
-		const s = this[SURFACE];
+		const s = this.#surface;
 		s.addEventListener('focus', e => this.#onFocus(e));
 		s.addEventListener('blur', e => this.#onBlur(e));
 
@@ -135,35 +96,35 @@ class SignPad extends HTMLElement {
 	}
 
 	#onFocus() {
-		this[CHANGED_SINCE_ACTIVE] = false;
+		this.#changedSinceActive = false;
 	}
 
 	#onBlur() {
-		if (this[CHANGED_SINCE_ACTIVE]) {
+		if (this.#changedSinceActive) {
 			this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
-			this[CHANGED_SINCE_ACTIVE] = false;
+			this.#changedSinceActive = false;
 		}
 	}
 
 	#drawStart(e) {
 		if (!e.isPrimary) { return; }
 		const pid = e.pointerId;
-		if (this[ACTIVE_POINTER] && pid !== this[ACTIVE_POINTER]) {
+		if (this.#activePointer && pid !== this.#activePointer) {
 			return;
 		}
 
 		e.target.setPointerCapture(pid);
-		this[ACTIVE_POINTER] = pid;
-		this[CURRENT_GROUP] = [];
-		this[CURRENT_POINT] = { x: e.offsetX, y: e.offsetY, w: 4 };
-		this[CURRENT_HOP] = null;
+		this.#activePointer = pid;
+		this.#currentGroup = [];
+		this.#currentPoint = { x: e.offsetX, y: e.offsetY, w: 4 };
+		this.#currentHop = null;
 	}
 
 	#drawEnd(e) {
-		if (e.pointerId === this[ACTIVE_POINTER]) {
-			e.target.releasePointerCapture(this[ACTIVE_POINTER]);
-			this[ACTIVE_POINTER] = null;
-		}
+		if (e.pointerId !== this.#activePointer) { return; }
+
+		e.target.releasePointerCapture(this.#activePointer);
+		this.#activePointer = null;
 	}
 
 	#keyProc(e) {
@@ -178,20 +139,20 @@ class SignPad extends HTMLElement {
 	}
 
 	#drawMove(e) {
-		if (e.pointerId !== this[ACTIVE_POINTER]) { return; }
+		if (e.pointerId !== this.#activePointer) { return; }
 
 		const tp = { x: e.offsetX, y: e.offsetY };
-		const fp = this[CURRENT_POINT];
+		const fp = this.#currentPoint;
 
 		//	calcs
-		const d = this.#calcDistance(fp, tp);
+		const d = calcDistance(fp.x, fp.y, tp.x, tp.y);
 		if (d < 4) { return; }
 		tp.w = this.#calcWeigth(d);
 		const hop = new Hop(fp, tp);
 		let adj = null;
 		let adj_to = null;
-		if (this[CURRENT_HOP]) {
-			let diff = hop.angle - this[CURRENT_HOP].angle;
+		if (this.#currentHop) {
+			let diff = hop.angle - this.#currentHop.angle;
 			if (Math.abs(diff) < Math.PI / 4) {
 				if (diff > Math.PI / 2) { diff -= Math.PI; }
 				if (diff < -Math.PI / 2) { diff += Math.PI; }
@@ -201,9 +162,9 @@ class SignPad extends HTMLElement {
 		}
 
 		//	memorize
-		this[CURRENT_HOP] = hop;
-		this[CURRENT_POINT] = tp;
-		const cg = this[CURRENT_GROUP];
+		this.#currentHop = hop;
+		this.#currentPoint = tp;
+		const cg = this.#currentGroup;
 		cg.push(hop);
 
 		//	draw
@@ -213,31 +174,23 @@ class SignPad extends HTMLElement {
 		this.#paintHop(hop, adj, adj_to, d);
 
 		//	manage state & notify
-		this[CHANGED_SINCE_ACTIVE] = true;
-		if (this[EMPTY_STATE]) {
-			this[EMPTY_STATE] = false;
-			this.removeAttribute(ATTRIBUTE_EMPTY);
-		}
+		this.#changedSinceActive = true;
+		this.removeAttribute(ATTRIBUTE_EMPTY);
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
-	#calcDistance(fp, tp) {
-		return Math.sqrt(Math.pow(tp.x - fp.x, 2) + Math.pow(tp.y - fp.y, 2));
-	}
-
 	#calcWeigth(ds) {
-		let fds = this[FULL_DIAG_SIZE];
-		if (!this[FULL_DIAG_SIZE]) {
+		if (!this.#fullDiagSize) {
 			const br = this.getBoundingClientRect();
-			fds = this[FULL_DIAG_SIZE] = Math.sqrt(Math.pow(br.width, 2) + Math.pow(br.height, 2));
+			this.#fullDiagSize = Math.sqrt(Math.pow(br.width, 2) + Math.pow(br.height, 2));
 		}
-		return Math.max(2, 4 - ds / fds * 64);
+		return Math.max(2, 4 - ds / this.#fullDiagSize * 64);
 	}
 
 	#paintJoin(fh, th) {
 		const svgp = document.createElementNS(SVG_NAMESPACE, 'path');
 		svgp.setAttribute('d', `M ${r(fh.tpx1)} ${r(fh.tpy1)} L ${r(th.fpx1)} ${r(th.fpy1)} L ${r(fh.tpx2)} ${r(fh.tpy2)} L ${r(th.fpx2)} ${r(th.fpy2)} Z`);
-		this[SURFACE].appendChild(svgp);
+		this.#surface.appendChild(svgp);
 	}
 
 	#paintHop(h, ad, at, d) {
@@ -251,11 +204,11 @@ class SignPad extends HTMLElement {
 		} else {
 			svgp.setAttribute('d', `M ${r(h.fpx1)} ${r(h.fpy1)} L ${r(h.tpx1)} ${r(h.tpy1)} L ${r(h.tpx2)} ${r(h.tpy2)} L ${r(h.fpx2)} ${r(h.fpy2)} Z`);
 		}
-		this[SURFACE].appendChild(svgp);
+		this.#surface.appendChild(svgp);
 	}
 
 	#exportSvg(opts) {
-		const rawData = extractSvgRawData(this[SURFACE]);
+		const rawData = extractSvgRawData(this.#surface);
 		const result = document.createElementNS(SVG_NAMESPACE, 'svg');
 		for (const s of rawData.hops) {
 			result.appendChild(s);
@@ -270,7 +223,7 @@ class SignPad extends HTMLElement {
 	}
 
 	#exportCanvas(opts) {
-		const rawData = extractSvgRawData(this[SURFACE]);
+		const rawData = extractSvgRawData(this.#surface);
 		const result = svgToCanvas(rawData, opts[INK_KEY], opts[FILL_KEY], opts[TRIM_KEY]);
 		return result;
 	}
