@@ -33,7 +33,7 @@ suite.runTest({ name: 'form associated by id' }, test => {
 	test.assertEqual(f, sp.form);
 });
 
-suite.runTest({ name: 'form data submitted' }, test => {
+suite.runTest({ name: 'form data submitted' }, async test => {
 	const c = document.createElement('div');
 	const f = document.createElement('form');
 	const sp = document.createElement('sign-pad');
@@ -45,11 +45,17 @@ suite.runTest({ name: 'form data submitted' }, test => {
 	simulateDrawing(sp);
 	simulateBlur(sp);
 
-	f.addEventListener('submit', event => {
-		event.preventDefault();
-		const fd = new FormData(event.target);
-		console.log(Array.from(fd.keys()));
+	const testPromise = new Promise(r => {
+		f.addEventListener('submit', event => {
+			event.preventDefault();
+			const fd = new FormData(event.target);
+			r(fd);
+		});
 	});
-
 	f.requestSubmit();
+
+	const submitResult = await testPromise;
+	const fdKeys = Array.from(submitResult.keys());
+	test.assertEqual(1, fdKeys.length);
+	test.assertEqual('signature', fdKeys[0]);
 });
