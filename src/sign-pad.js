@@ -58,13 +58,11 @@ class SignPad extends HTMLElement {
 		this.setAttribute(ATTRIBUTE_EMPTY, '');
 	}
 
-	get isEmpty() {
-		return !this.#surface.innerHTML.length;
-	}
+	get isEmpty() { return !this.#surface.innerHTML.length; }
 
-	get form() {
-		return this.#internals.form;
-	}
+	get form() { return this.#internals.form; }
+
+	get name() { return this.getAttribute('name'); }
 
 	clear() {
 		if (this.isEmpty) { return; }
@@ -102,14 +100,31 @@ class SignPad extends HTMLElement {
 	}
 
 	#onFocus() {
+		this.#resetValidity();
 		this.#changedSinceActive = false;
 	}
 
 	#onBlur() {
-		if (this.#changedSinceActive) {
-			this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
-			this.#changedSinceActive = false;
+		if (!this.#changedSinceActive) {
+			return;
 		}
+
+		this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
+		this.#updateValidity();
+		this.#internals.setFormValue('some value');
+		this.#changedSinceActive = false;
+	}
+
+	#resetValidity() {
+		this.#internals.setValidity({
+			valueMissing: false
+		}, '');
+	}
+
+	#updateValidity() {
+		this.#internals.setValidity({
+			valueMissing: true
+		}, 'value.missing');
 	}
 
 	#drawStart(e) {

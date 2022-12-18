@@ -26,8 +26,15 @@ suite.runTest({ name: 'form associated by id' }, test => {
 	f.id = 'form-1';
 	const sp = document.createElement('sign-pad');
 	sp.setAttribute('form', 'form-1');
+	sp.setAttribute('name', 'signature');
 	c.appendChild(f);
 	c.appendChild(sp);
 	document.body.appendChild(c);
 	test.assertEqual(f, sp.form);
+
+	f.addEventListener('submit', event => {
+		event.preventDefault();
+		const fd = new FormData(event.target);
+		console.log(Array.from(fd.keys()));
+	});
 });
