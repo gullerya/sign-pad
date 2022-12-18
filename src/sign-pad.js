@@ -64,6 +64,8 @@ class SignPad extends HTMLElement {
 
 	get name() { return this.getAttribute('name'); }
 
+	get type() { return this.localName; }
+
 	clear() {
 		if (this.isEmpty) { return; }
 		this.#surface.innerHTML = '';
@@ -123,8 +125,8 @@ class SignPad extends HTMLElement {
 
 	#updateValidity() {
 		this.#internals.setValidity({
-			valueMissing: true
-		}, 'value.missing');
+			valueMissing: false
+		}, '');
 	}
 
 	#drawStart(e) {
