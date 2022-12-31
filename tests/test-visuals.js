@@ -1,6 +1,6 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
 import { simulateDrawing, simulateCurvingDrawing, obtainSurface } from './utils.js';
-import { LOCAL_NAME } from '/dist/sign-pad.js';
+import { LOCAL_NAME } from '/src/sign-pad.js';
 
 const suite = getSuite({ name: 'Visuals and behaviours' });
 

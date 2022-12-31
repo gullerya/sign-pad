@@ -19,7 +19,7 @@
 	- opt-in **trim** whitespace around the signature if needed
 	- configurable **ink** and **fill** (background) of the exported image
 - convenient interop API:
-	- **empty** state reflected as property and attribute (for easy state-based styling and logic)
+	- **empty** state reflected as property (`isEmpty`) and attribute (`empty`), for easy state-based styling and logic
 	- `input` event fired upon each signature drawing touch (including clear)
 	- `change` event fired when the `sign-pad` looses focus if the content has been changed since it gained it
 

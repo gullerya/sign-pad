@@ -11,20 +11,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.SP_CI_AT }}
 
       - name: Delete temporary trigger tag
         run: git push origin --delete deploy
 
-      - name: Setup NodeJS 14
-        uses: actions/setup-node@v2
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
 
       - name: Install
-        run: npm install
+        run: npm ci
 
       # Get release version
       - name: Get release version
