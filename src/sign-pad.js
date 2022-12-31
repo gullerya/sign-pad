@@ -69,7 +69,18 @@ class SignPad extends HTMLElement {
 	get type() { return this.localName; }
 
 	get value() {
-		return this.isEmpty ? null : this.export();
+		let r = null;
+		if (!this.isEmpty) {
+			let tmpVal = this.export();
+			if (tmpVal.tagName === 'svg') {
+				r = tmpVal.outerHTML;
+			} else if (tmpVal.tagName === 'CANVAS') {
+				r = tmpVal.toBlob();
+			} else {
+				console.log(`error producing value; unexpected raw data: ${tmpVal}`);
+			}
+		}
+		return r;
 	}
 
 	clear() {
@@ -116,9 +127,7 @@ class SignPad extends HTMLElement {
 			this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
 		}
 
-		const v = this.value;
-		const submittableV = v ? v.outerHTML : null;
-		this.#internals.setFormValue(submittableV, v);
+		this.#internals.setFormValue(this.value);
 		this.#updateValidity();
 		this.#changedSinceActive = false;
 	}

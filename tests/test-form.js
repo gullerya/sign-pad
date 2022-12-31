@@ -58,5 +58,5 @@ suite.runTest({ name: 'form data submitted' }, async test => {
 	const fdKeys = Array.from(submitResult.keys());
 	test.assertEqual(1, fdKeys.length);
 	test.assertEqual('signature', fdKeys[0]);
-	console.log(submitResult.get('signature'));
+	test.assertEqual('<svg viewBox="0 0 300 200" fill="#000"><path d="M 73.08 50.57 L 99.04 133.62 L 100.95 133.04 L 76.91 49.42 Z"></path><path d="M 99.04 133.62 L 100.55 134.16 L 100.95 133.04 L 99.44 132.5 Z"></path><path d="M 100.55 134.16 L 225.55 50.83 L 224.44 49.16 L 99.44 132.5 Z"></path></svg>', submitResult.get('signature'));
 });

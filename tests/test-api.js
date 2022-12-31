@@ -100,3 +100,16 @@ suite.runTest({ name: 'export to canvas produces canvas' }, test => {
 	const expCanvas = e.export('canvas');
 	test.assertEqual('canvas', expCanvas.localName);
 });
+
+suite.runTest({ name: 'value is null when no data' }, test => {
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+	test.assertEqual(null, e.value);
+});
+
+suite.runTest({ name: 'value is svg text when data is present' }, test => {
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+	simulateDrawing(e);
+	test.assertEqual('<svg viewBox="0 0 300 200" fill="#000"><path d="M 73.08 50.57 L 99.04 133.62 L 100.95 133.04 L 76.91 49.42 Z"></path><path d="M 99.04 133.62 L 100.55 134.16 L 100.95 133.04 L 99.44 132.5 Z"></path><path d="M 100.55 134.16 L 225.55 50.83 L 224.44 49.16 L 99.44 132.5 Z"></path></svg>', e.value);
+});
