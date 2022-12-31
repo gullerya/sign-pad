@@ -69,26 +69,38 @@ class SignPad extends HTMLElement {
 	get type() { return this.localName; }
 
 	get value() {
-		let r = null;
+		let result = null;
 		if (!this.isEmpty) {
 			let tmpVal = this.export();
 			if (tmpVal.tagName === 'svg') {
-				r = tmpVal.outerHTML;
+				result = tmpVal.outerHTML;
 			} else if (tmpVal.tagName === 'CANVAS') {
-				r = tmpVal.toBlob();
+				result = tmpVal.toBlob();
 			} else {
 				console.log(`error producing value; unexpected raw data: ${tmpVal}`);
 			}
 		}
-		return r;
+		return result;
 	}
 
-	clear() {
-		if (this.isEmpty) { return; }
-		this.#surface.innerHTML = '';
-		this.#changedSinceActive = true;
-		this.setAttribute(ATTRIBUTE_EMPTY, '');
-		this.dispatchEvent(new Event(INPUT_EVENT));
+	set value(newValue) {
+		if (newValue === null) {
+			if (!this.isEmpty) {
+				this.#surface.innerHTML = '';
+				this.setAttribute(ATTRIBUTE_EMPTY, '');
+				let eventType;
+				if (document.activeElement === this) {
+					eventType = INPUT_EVENT;
+					this.#changedSinceActive = true;
+				} else {
+					eventType = CHANGE_EVENT;
+				}
+				this.dispatchEvent(new Event(eventType));
+			}
+			return;
+		} else {
+			throw new Error(`un-yet-supported value type '${newValue}'`);
+		}
 	}
 
 	export(format = FKEY_SVG, options) {
@@ -170,7 +182,7 @@ class SignPad extends HTMLElement {
 	#keyProc(e) {
 		switch (e.code) {
 			case 'Escape':
-				this.clear();
+				this.value = null;
 				break;
 			case 'Enter':
 				this.blur();

@@ -43,7 +43,6 @@ Note, however, that those adjustments will have visual effect only. In order to 
 
 | Signature                 | Description |
 |---------------------------|-------------|
-| `clear()`                 | clears the signature surface |
 | `export(format, options)` | exports the signature as per format and options, see below for further info |
 
 ### `format` (string):

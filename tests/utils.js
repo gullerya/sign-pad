@@ -1,7 +1,7 @@
 export {
 	simulateDrawing,
 	simulateCurvingDrawing,
-	simulateEscapeKey,
+	simulateFocusThenEscapeKey,
 	simulateEnterKey,
 	simulateFocus,
 	simulateBlur,
@@ -101,10 +101,11 @@ function simulateCurvingDrawing(signPad) {
 	s.dispatchEvent(e);
 }
 
-function simulateEscapeKey(signPad) {
+function simulateFocusThenEscapeKey(signPad) {
 	const s = obtainSurface(signPad);
 	const e = new Event('keyup');
 	e.code = 'Escape';
+	s.focus();
 	s.dispatchEvent(e);
 }
 

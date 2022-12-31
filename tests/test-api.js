@@ -1,5 +1,5 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
-import { simulateDrawing, simulateEscapeKey, obtainSurface } from './utils.js';
+import { simulateDrawing, simulateFocusThenEscapeKey, obtainSurface } from './utils.js';
 import { LOCAL_NAME as DEFAULT_LOCAL_NAME } from '/src/sign-pad.js';
 import { LOCAL_NAME } from '/src/sign-pad.js?local-name=sign-pad-x';
 
@@ -23,21 +23,21 @@ suite.runTest({ name: 'has content when drawn' }, test => {
 	test.assertEqual(3, obtainSurface(e).childElementCount);
 });
 
-suite.runTest({ name: 'has no content when clear (API)' }, test => {
+suite.runTest({ name: 'has no content when value set to null (API)' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	simulateDrawing(e);
 	test.assertEqual(3, obtainSurface(e).childElementCount);
-	e.clear();
+	e.value = null;
 	test.assertEqual(0, obtainSurface(e).childElementCount);
 });
 
-suite.runTest({ name: 'has no content when clear (Escape simulation)' }, test => {
+suite.runTest({ name: 'has no content when value set to null (Escape simulation)' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
 	simulateDrawing(e);
 	test.assertEqual(3, obtainSurface(e).childElementCount);
-	simulateEscapeKey(e);
+	simulateFocusThenEscapeKey(e);
 	test.assertEqual(0, obtainSurface(e).childElementCount);
 });
 
@@ -57,12 +57,11 @@ suite.runTest({ name: 'empty state false (absent) when drawn' }, test => {
 	test.assertFalse(e.hasAttribute('empty'));
 });
 
-suite.runTest({ name: 'empty state true (present) when clear' }, test => {
+suite.runTest({ name: 'empty state true (present) when no value' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
-	simulateDrawing(e);
-	test.assertFalse(e.isEmpty);
-	test.assertFalse(e.hasAttribute('empty'));
+	test.assertTrue(e.isEmpty);
+	test.assertTrue(e.hasAttribute('empty'));
 });
 
 suite.runTest({ name: 'unknown export produces error' }, test => {
@@ -72,8 +71,8 @@ suite.runTest({ name: 'unknown export produces error' }, test => {
 	try {
 		const expSVG = e.export('wrong-format');
 		test.assertEqual('svg', expSVG.localName);
-	} catch (e) {
-		test.assertEqual(`unknown format 'wrong-format'; use one of those: [svg, canvas]`, e.message);
+	} catch (error) {
+		test.assertEqual(`unknown format 'wrong-format'; use one of those: [svg, canvas]`, error.message);
 	}
 });
 

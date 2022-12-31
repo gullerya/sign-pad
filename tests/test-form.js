@@ -1,5 +1,5 @@
 import { getSuite } from '/node_modules/just-test/dist/just-test.js'
-import { simulateDrawing, simulateEscapeKey, obtainSurface, simulateBlur } from './utils.js';
+import { simulateDrawing, simulateBlur } from './utils.js';
 
 const suite = getSuite({ name: 'form association' });
 
