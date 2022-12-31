@@ -58,4 +58,5 @@ suite.runTest({ name: 'form data submitted' }, async test => {
 	const fdKeys = Array.from(submitResult.keys());
 	test.assertEqual(1, fdKeys.length);
 	test.assertEqual('signature', fdKeys[0]);
+	console.log(submitResult.get('signature'));
 });

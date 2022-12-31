@@ -18,6 +18,8 @@ const
 	INPUT_EVENT = 'input',
 	CHANGE_EVENT = 'change',
 	ATTRIBUTE_EMPTY = 'empty',
+	FKEY_SVG = 'svg',
+	FKEY_CANVAS = 'canvas',
 	TRIM_KEY = 'trim',
 	INK_KEY = 'ink',
 	FILL_KEY = 'fill',
@@ -27,8 +29,8 @@ const
 		[FILL_KEY]: 'transparent'
 	},
 	EXPORT_FORMATS = {
-		svg: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
-		canvas: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
+		[FKEY_SVG]: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
+		[FKEY_CANVAS]: { defaultOptions: Object.assign({}, EXPORT_DEFAULTS) },
 	};
 
 const TEMPLATE = document.createElement('template');
@@ -66,6 +68,10 @@ class SignPad extends HTMLElement {
 
 	get type() { return this.localName; }
 
+	get value() {
+		return this.isEmpty ? null : this.export();
+	}
+
 	clear() {
 		if (this.isEmpty) { return; }
 		this.#surface.innerHTML = '';
@@ -74,7 +80,7 @@ class SignPad extends HTMLElement {
 		this.dispatchEvent(new Event(INPUT_EVENT));
 	}
 
-	export(format = EXPORT_FORMATS.SVG, options) {
+	export(format = FKEY_SVG, options) {
 		if (!(format in EXPORT_FORMATS)) {
 			throw new Error(`unknown format '${format}'; use one of those: [${Object.keys(EXPORT_FORMATS).join(', ')}]`);
 		}
@@ -102,31 +108,33 @@ class SignPad extends HTMLElement {
 	}
 
 	#onFocus() {
-		this.#resetValidity();
 		this.#changedSinceActive = false;
 	}
 
 	#onBlur() {
-		if (!this.#changedSinceActive) {
-			return;
+		if (this.#changedSinceActive) {
+			this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
 		}
 
-		this.dispatchEvent(new Event(CHANGE_EVENT, { bubbles: true, composed: true }));
+		const v = this.value;
+		const submittableV = v ? v.outerHTML : null;
+		this.#internals.setFormValue(submittableV, v);
 		this.#updateValidity();
-		this.#internals.setFormValue('some value');
 		this.#changedSinceActive = false;
 	}
 
-	#resetValidity() {
-		this.#internals.setValidity({
-			valueMissing: false
-		}, '');
+	#clearValidity() {
+		this.#internals.setValidity({ valueMissing: false }, '');
 	}
 
 	#updateValidity() {
-		this.#internals.setValidity({
-			valueMissing: false
-		}, '');
+		let valueMissing = false;
+		let errorMessage = '';
+		if (this.isEmpty) {
+			valueMissing = true;
+			errorMessage = 'value missing';
+		}
+		this.#internals.setValidity({ valueMissing }, errorMessage);
 	}
 
 	#drawStart(e) {
@@ -200,6 +208,7 @@ class SignPad extends HTMLElement {
 		this.#changedSinceActive = true;
 		this.removeAttribute(ATTRIBUTE_EMPTY);
 		this.dispatchEvent(new Event(INPUT_EVENT));
+		this.#clearValidity();
 	}
 
 	#calcWeigth(ds) {

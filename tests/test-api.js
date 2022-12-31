@@ -65,6 +65,26 @@ suite.runTest({ name: 'empty state true (present) when clear' }, test => {
 	test.assertFalse(e.hasAttribute('empty'));
 });
 
+suite.runTest({ name: 'unknown export produces error' }, test => {
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+	simulateDrawing(e);
+	try {
+		const expSVG = e.export('wrong-format');
+		test.assertEqual('svg', expSVG.localName);
+	} catch (e) {
+		test.assertEqual(`unknown format 'wrong-format'; use one of those: [svg, canvas]`, e.message);
+	}
+});
+
+suite.runTest({ name: 'default export produces SVG' }, test => {
+	const e = document.createElement(LOCAL_NAME);
+	document.body.appendChild(e);
+	simulateDrawing(e);
+	const expSVG = e.export();
+	test.assertEqual('svg', expSVG.localName);
+});
+
 suite.runTest({ name: 'export to SVG produces SVG' }, test => {
 	const e = document.createElement(LOCAL_NAME);
 	document.body.appendChild(e);
